@@ -1,9 +1,10 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { publicProcedure, router } from "./trpc";
 import { TRPCError } from "@trpc/server";
-import { db } from "@/server/db/client";
+//import { db } from "@/server/db/client";
+//import { eq } from "drizzle-orm";
 
-import { usersTable, type User } from "@/server/db/schema";
+import * as User from "@/server/db/schema";
 
 export const appRouter = router({
   // test: publicProcedure.query(() => {
@@ -19,11 +20,15 @@ export const appRouter = router({
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
 
-    const dbUser = await db
-      .select()
-      .from(usersTable)
-      .where({ externalId: user.id })
-      .first();
+    const dbUser = await User.getUserByExternalId(user.id);
+
+    if (!dbUser) {
+      //throw new TRPCError({ code: "UNAUTHORIZED" });
+      await User.insertUser({
+        externalId: user.id,
+        email: user.email,
+      });
+    }
   }),
 });
 
