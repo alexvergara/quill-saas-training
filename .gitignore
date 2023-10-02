@@ -38,3 +38,4 @@ next-env.d.ts
 # Alex
 *_old*
 .env*
+/drizzle

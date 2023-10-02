@@ -1,1 +1,1 @@
-export * from "./users";
+export * as User from "./users";
