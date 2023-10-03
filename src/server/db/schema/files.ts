@@ -29,15 +29,23 @@ export const filesTableRelations = relations(filesTable, ({ one }) => ({
 export type File = typeof filesTable.$inferSelect;
 export type NewFile = typeof filesTable.$inferInsert;
 
-export const getAllFiles = async (): Promise<File[]> => {
+/*export const getAllFiles = async (): Promise<File[]> => {
   return db.select().from(filesTable);
 };
 
 export const getFileById = (id: number) => {
   return db.select().from(filesTable).where(eq(filesTable.id, id)).limit(1);
+};*/
+
+export const getUserFileByKey = (userId: string, key: string) => {
+  return db
+    .select()
+    .from(filesTable)
+    .where(and(eq(filesTable.userId, userId), eq(filesTable.key, key)))
+    .limit(1);
 };
 
-export const getFilesByUserId = (id: string) => {
+export const getUserFiles = (id: string) => {
   return db.select().from(filesTable).where(eq(filesTable.userId, id));
 };
 

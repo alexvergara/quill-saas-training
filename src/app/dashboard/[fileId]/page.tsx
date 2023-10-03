@@ -16,11 +16,11 @@ interface PageProps {
 const SingleFilePage = ({ params }: PageProps) => {
   const { fileId } = params;
 
-  if (!fileId || isNaN(fileId)) notFound();
+  if (!fileId || isNaN(fileId)) return notFound();
 
   const { data: file, isLoading } = trpc.getUserFileById.useQuery({ id: parseInt('0' + (fileId || 0)) }); // TODO: Fix this (Force int)
 
-  if (!isLoading && (!file || !file.length)) notFound();
+  if (!isLoading && (!file || !file.length)) return notFound();
 
   console.log(file);
 
@@ -30,7 +30,7 @@ const SingleFilePage = ({ params }: PageProps) => {
         {/* File viewer */}
         <div className="flex-1 xl:flex">
           <div className="px-4 py-6 sm:px-6 lg:pl-8 xl:flex-1 xl:pl-6">
-            <PDFRenderer />
+            <PDFRenderer url={(file && file[0].url) || ''} />
           </div>
         </div>
 

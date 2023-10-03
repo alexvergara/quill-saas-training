@@ -2,11 +2,11 @@
 
 import React from 'react';
 
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { GhostIcon, Loader2Icon, MessageSquareIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import { trpc } from '@app/_trpc/client';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { format } from 'date-fns';
 
 import UploadButton from './UploadButton';
@@ -23,14 +23,12 @@ const Dashboard = () => {
       utils.getUserFiles.invalidate();
     },
     onMutate({ id }) {
-      setCurrentlyDeletingFile(id);
+      setCurrentlyDeletingFile(id); // TODO: Call uploadthing to delete file
     },
     onSettled() {
       setCurrentlyDeletingFile(null);
     }
   });
-
-  //console.log(userFiles);
 
   return (
     <main className="mx-auto max-w-7xl md:p-10">
@@ -79,7 +77,7 @@ const Dashboard = () => {
                   moked
                 </div>
 
-                <Button variant="destructive" size="sm" className="w-full" onClick={() => deleteUserFile({ id: file.id })}>
+                <Button variant="destructive" size="sm" className="w-full" onClick={() => deleteUserFile(file)}>
                   {currentlyDeletingFile === file.id ? <Loader2Icon className="w-4 h-4 animate-spin" /> : <TrashIcon className="h-4 w-4" />}
                 </Button>
               </div>
