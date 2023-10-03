@@ -28,6 +28,7 @@ const UploadDropzone = () => {
     onClientUploadComplete: (response) => {
       if (!response) return toast({ title: 'Something went wrong', description: 'Please try again later', variant: 'destructive' });
       const [fileResponse] = response;
+      //console.log(fileResponse);
       startPolling({ key: fileResponse?.key });
     }
   });
@@ -36,6 +37,12 @@ const UploadDropzone = () => {
     onSuccess: (file) => router.push(`/dashboard/${file.id}`),
     retry: true,
     retryDelay: 500
+    /*onError: (error) => {
+      console.error(error);
+      toast({ title: 'Something went wrong', description: error.message, variant: 'destructive' });
+      //router.push('/dashboard');
+      setIsUploading(false);
+    }*/
   });
 
   // TODO: Add function for cancelling upload (if possible)

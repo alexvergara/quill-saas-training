@@ -17,6 +17,16 @@ export const filesRouter = {
     return await files.getUserFileById(userId, input.id);
   }),
 
+  getUserFileUploadStatus: privateProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
+    const { userId } = ctx;
+
+    const file = await files.getUserFileById(userId, input.id);
+
+    if (!file.length) return { uploadStatus: files.UploadStatuses[0] };
+
+    return { uploadStatus: file[0].uploadStatus } as { uploadStatus: string };
+  }),
+
   getUserFileByKey: privateProcedure.input(z.object({ key: z.string() })).mutation(async ({ ctx, input }) => {
     const { userId } = ctx;
 

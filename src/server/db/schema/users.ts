@@ -1,26 +1,28 @@
-import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { eq, relations } from 'drizzle-orm';
 import { db } from '../client';
 
 import { filesTable } from './files';
+import { messagesTable } from './messages';
 
 export const usersTable = pgTable('users', {
   id: text('id').primaryKey(),
-  email: text('email').unique().notNull(),
+  email: text('email').notNull(), // .unique() creates conflicts
   // name: text('name').notNull(),
   // fullName: text('full_name'),
   // phone: varchar('phone', { length: 256 }),
   // image: text('image').notNull(),
-  stripeCustomerId: text('stripe_customer_id').unique(),
-  stripeSubscriptionId: text('stripe_subscription_id').unique(),
-  stripePriceId: text('stripe_price_id').unique(),
+  stripeCustomerId: text('stripe_customer_id'), // .unique() creates conflicts
+  stripeSubscriptionId: text('stripe_subscription_id'), // .unique() creates conflicts
+  stripePriceId: text('stripe_price_id'), // .unique() creates conflicts
   stripeCurrentPeriodEnd: timestamp('stripe_current_period_end_at'),
 
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
 export const usersTableRelations = relations(usersTable, ({ many }) => ({
-  files: many(filesTable)
+  files: many(filesTable),
+  messages: many(messagesTable)
 }));
 
 export type User = typeof usersTable.$inferSelect; // return type when queried

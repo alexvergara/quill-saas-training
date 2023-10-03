@@ -1,7 +1,7 @@
 import { createUploadthing, type FileRouter } from 'uploadthing/next';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import { vectorizePDF } from '@/lib/pinecone';
 import { files } from '@/server/db/schema';
-//import { utapi } from '@/lib/uploadthing';
 
 const f = createUploadthing();
 
@@ -16,6 +16,8 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
+      //const statues = files.UploadStatuses.reduce((acc, item) => { return { ...acc, [item]: item }, {} } as any);
+
       const newFile = await files.insertFile({
         key: file.key,
         //url: file.url,
@@ -24,6 +26,28 @@ export const ourFileRouter = {
         userId: metadata.userId,
         uploadStatus: 'PROCESSING'
       });
+
+      // TODO: send to queue for processing
+
+      // TODO: update upload status after processing
+
+      let uploadStatus = files.UploadStatuses.find((item) => item === 'FAILED');
+      try {
+        console.log('vectorizing', file.url, newFile[0].id);
+
+        const response = await vectorizePDF(file.url, newFile[0].id);
+
+        console.log('vectorized');
+
+        if (response) uploadStatus = files.UploadStatuses.find((item) => item === 'UPLOADED');
+      } catch (e) {
+        console.log('error', e);
+        uploadStatus = files.UploadStatuses.find((item) => item === 'VECTOR-FAIL');
+      }
+
+      await files.updateFile(newFile[0].id, { ...newFile[0], uploadStatus: uploadStatus });
+
+      //console.log('newFile', newFile);
     })
 } satisfies FileRouter;
 

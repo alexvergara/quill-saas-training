@@ -3,27 +3,29 @@ import { eq, and, relations } from 'drizzle-orm';
 import { db } from '../client';
 
 import { usersTable } from './users';
+import { messagesTable } from './messages';
 
-export const UploadStatuses = ['PENDING', 'UPLOADED', 'PROCESSING', 'FAILED'] as const;
+export const UploadStatuses = ['PENDING', 'UPLOADED', 'PROCESSING', 'FAILED', 'VECTOR-FAIL'] as const;
 export const uploadStatusEnum = pgEnum('upload_status', UploadStatuses);
 
 export const filesTable = pgTable('files', {
   id: serial('id').primaryKey(),
-  name: text('name').unique().notNull(),
+  name: text('name').notNull(), // .unique() creates conflicts
   userId: text('user_id').references(() => usersTable.id),
   uploadStatus: uploadStatusEnum('upload_status').default(UploadStatuses[0]),
-  url: text('url').unique().notNull(),
-  key: text('key').unique().notNull(),
+  url: text('url').notNull(), // .unique() creates conflicts
+  key: text('key').notNull(), // .unique() creates conflicts
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at') //.defaultNow().notNull()
 });
 
-export const filesTableRelations = relations(filesTable, ({ one }) => ({
+export const filesTableRelations = relations(filesTable, ({ one, many }) => ({
   user: one(usersTable, {
     fields: [filesTable.userId],
     references: [usersTable.id]
-  })
+  }),
+  messages: many(messagesTable)
 }));
 
 export type File = typeof filesTable.$inferSelect;
@@ -58,7 +60,16 @@ export const getUserFileById = (userId: string, id: number) => {
 };
 
 export const insertFile = async (file: NewFile): Promise<File[]> => {
+  // TODO: add userId to this
   return db.insert(filesTable).values(file).returning();
+};
+
+export const updateFile = async (id: number, file: NewFile): Promise<File[]> => {
+  // TODO: add userId to this and grab the file from DB
+  delete file.createdAt;
+  delete file.id;
+  file.updatedAt = new Date();
+  return db.update(filesTable).set(file).where(eq(filesTable.id, id)).returning();
 };
 
 export const deleteFile = async (id: number): Promise<File[]> => {
