@@ -1,11 +1,11 @@
-import { pgTable, serial, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, pgEnum, integer } from 'drizzle-orm/pg-core';
 import { eq, and, relations } from 'drizzle-orm';
 import { db } from '../client';
 
 import { usersTable } from './users';
 import { messagesTable } from './messages';
 
-export const UploadStatuses = ['PENDING', 'UPLOADED', 'PROCESSING', 'FAILED', 'VECTOR-FAIL'] as const;
+export const UploadStatuses = ['PENDING', 'UPLOADED', 'PROCESSING', 'FAILED', 'VECTOR_FAIL', 'SUCCESS'] as const;
 export const uploadStatusEnum = pgEnum('upload_status', UploadStatuses);
 
 export const filesTable = pgTable('files', {
@@ -13,6 +13,7 @@ export const filesTable = pgTable('files', {
   name: text('name').notNull(), // .unique() creates conflicts
   userId: text('user_id').references(() => usersTable.id),
   uploadStatus: uploadStatusEnum('upload_status').default(UploadStatuses[0]),
+  retry: integer('retry').default(0).notNull(),
   url: text('url').notNull(), // .unique() creates conflicts
   key: text('key').notNull(), // .unique() creates conflicts
 

@@ -36,8 +36,8 @@ export const PDFRenderer = ({ url }: { url: string }) => {
   const renderDocument = <PDFDocument url={url} page={pageNumber} scale={scale} rotate={rotate} setNumPages={setNumPages} />;
 
   return (
-    <div className="w-full bg-white rounded-md shadow flex flex-col items-center">
-      <div className="h-14 w-full border-b border-zinc-200 flex items-center justify-between px-2">
+    <div className="flex flex-col items-center w-full rounded-md shadow bg-white dark:bg-slate-900">
+      <div className="flex items-center justify-between px-2 w-full h-14 border-b border-zinc-200 dark:border-slate-700">
         {numPages ? (
           <>
             <div className="flex items-center gap-1.5">
@@ -48,7 +48,7 @@ export const PDFRenderer = ({ url }: { url: string }) => {
               <div className="flex items-center gap-1.5">
                 {/* <Input {...register('pageNumber')} className={cn('w-auto h-8 text-center', errors.pageNumber && 'outline-red-500')} onKeyDown={(e) => (e.key === 'Enter' ? handleSubmit(handlePageSubmit) : false)} /> */}
                 <Input type="number" min={1} max={numPages} value={refNumber.current || ''} onFocus={(e) => e.currentTarget.select()} onChange={(e) => handlePageNumber(0, e)} className="w-auto h-8 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                <p className="text-zinc-700 text-sm space-x-1">
+                <p className="space-x-1 text-sm text-zinc-700 dark:text-slate-50">
                   /<span className="font-semibold">{numPages}</span>
                 </p>
               </div>
@@ -68,7 +68,7 @@ export const PDFRenderer = ({ url }: { url: string }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   {[0.5, 1, 1.5, 2, 2.5].map((option) => (
-                    <DropdownMenuItem key={option} onSelect={() => setScale(option)} className={scale === option ? 'bg-zinc-100 font-bold' : ''}>
+                    <DropdownMenuItem key={option} onSelect={() => setScale(option)} className={scale === option ? 'font-bold bg-zinc-100 dark:bg-slate-800' : ''}>
                       <span className="m-auto">{option * 100}%</span>
                     </DropdownMenuItem>
                   ))}
@@ -86,7 +86,7 @@ export const PDFRenderer = ({ url }: { url: string }) => {
         ) : null}
       </div>
 
-      <div className="flex-1 w-full max-h-screen justify-center">
+      <div className="flex-1 w-full justify-center max-h-screen ">
         <Simplebar autoHide={false} className="max-h-[calc(100vh-10rem)]">
           {renderDocument}
         </Simplebar>

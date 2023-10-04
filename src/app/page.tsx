@@ -7,14 +7,14 @@ import Image from 'next/image';
 const HomePage = () => {
   return (
     <>
-      <MaxWidthWrapper className="mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center">
-        <div className="mx-auto mb-4 flex max-w-fit items-center justify-center space-x-2 overflow-hidden rounded-full border border-gray-200 bg-white px-7 py-2 shadow-md backdrop-blur transition-all hover:border-gray-300 hover:bg-white/50">
-          <p className="text-sm font-semibold text-gray-700">Quill is now public!</p>
+      <MaxWidthWrapper className="flex flex-col items-center justify-center mb-12 mt-28 sm:mt-40 text-center">
+        <div className="flex items-center justify-center space-x-2 px-7 py-2 mx-auto mb-4 max-w-fit rounded-full border shadow-md backdrop-blur overflow-hidden transition-all bg-white border-gray-200 hover:bg-white/50 hover:border-gray-300 dark:bg-black dark:border-gray-700 dark:hover:bg-black/50 dark:hover:border-gray-600 ">
+          <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Quill is now public!</p>
         </div>
-        <h1 className="max-w-5xl text-5xl font-bold md:text-6xl lg:text-7xl">
-          Chat with your <span className="text-blue-500">documents</span> in seconds.
+        <h1 className="max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl">
+          Chat with your <span className="text-blue-500 dark:text-blue-400">documents</span> in seconds.
         </h1>
-        <p className="mt-5 max-w-prose text-zinc-700 sm:te">Quill allows you to have conversations with any PDF document. Simply upload your file and start asking questions right away.</p>
+        <p className="mt-5 max-w-prose sm:text-lg text-zinc-700 dark:text-slate-200">Quill allows you to have conversations with any PDF document. Simply upload your file and start asking questions right away.</p>
 
         <Link href="/dashboard" className={buttonVariants({ size: 'lg', className: 'mt-5' })} target="_blank">
           Get started <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -58,8 +58,8 @@ const HomePage = () => {
       <div className="mx-auto mb-32 mt-32 max-w-5xl sm:mt-56">
         <div className="mb-12 px-6 lg:px-8">
           <div className="mx-auto max-w-2xl sm:text-center">
-            <h2 className="mt-2 font-bold text-4xl text-gray-900 sm:text-5xl">Start chatting in minutes</h2>
-            <p className="mt-4 text-lg text-gray-600">Chatting with your PDF files has never been easier than with Quill.</p>
+            <h2 className="mt-2 font-bold text-4xl sm:text-5xl text-gray-900 dark:text-slate-50">Start chatting in minutes</h2>
+            <p className="mt-4 text-lg text-gray-600 dark:text-slate-300">Chatting with your PDF files has never been easier than with Quill.</p>
           </div>
         </div>
         {/* Steps */}
@@ -94,8 +94,8 @@ const HomePage = () => {
 
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
           <div className="mt-16 flow-root sm:mt-24">
-            <div className="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
-              <Image src="/img/file-upload-preview.jpg" width={1419} height={732} quality={100} alt="Uploading preview" className="rounded-md bg-white p-2 sm:p-8 md:p-20 shadow-xl ring-1 ring-gray-900/10" />
+            <div className="-m-2 rounded-xl p-2 ring-1 ring-inset lg:-m-4 lg:rounded-2xl lg:p-4 bg-gray-900/5 ring-gray-900/10 dark:bg-gray-50/5 dark:ring-gray-50/10">
+              <Image src="/img/file-upload-preview.jpg" width={1419} height={732} quality={100} alt="Uploading preview" className="rounded-md p-2 sm:p-8 md:p-20 shadow-xl ring-1 bg-white ring-gray-900/10 dark:bg-black dark:ring-gray-50/10" />
             </div>
           </div>
         </div>

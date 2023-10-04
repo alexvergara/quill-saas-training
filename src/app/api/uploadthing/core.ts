@@ -19,6 +19,7 @@ export const ourFileRouter = {
       //const statues = files.UploadStatuses.reduce((acc, item) => { return { ...acc, [item]: item }, {} } as any);
 
       const newFile = await files.insertFile({
+        // TODO: Use intermediate file status (PENDING, UPLOADED)
         key: file.key,
         //url: file.url,
         url: `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`,
@@ -29,23 +30,20 @@ export const ourFileRouter = {
 
       // TODO: send to queue for processing
 
-      // TODO: update upload status after processing
-
+      // TODO: Move to a function on files ??? // TODO: Remove from here, is running twice
       let uploadStatus = files.UploadStatuses.find((item) => item === 'FAILED');
       try {
         console.log('vectorizing', file.url, newFile[0].id);
-
-        const response = await vectorizePDF(file.url, newFile[0].id);
-
-        console.log('vectorized');
-
-        if (response) uploadStatus = files.UploadStatuses.find((item) => item === 'UPLOADED');
+        if (await vectorizePDF(file.url, newFile[0].id)) {
+          console.log('vectorized');
+          uploadStatus = files.UploadStatuses.find((item) => item === 'SUCCESS');
+        }
       } catch (e) {
         console.log('error', e);
-        uploadStatus = files.UploadStatuses.find((item) => item === 'VECTOR-FAIL');
+        uploadStatus = files.UploadStatuses.find((item) => item === 'VECTOR_FAIL');
       }
 
-      await files.updateFile(newFile[0].id, { ...newFile[0], uploadStatus: uploadStatus });
+      await files.updateFile(newFile[0].id, { ...newFile[0], uploadStatus });
 
       //console.log('newFile', newFile);
     })

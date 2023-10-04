@@ -2,7 +2,6 @@ import React from 'react';
 
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation } from '@tanstack/react-query';
-import { send } from 'process';
 
 export type StreamResponse = {
   message: string;

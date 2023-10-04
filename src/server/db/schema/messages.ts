@@ -1,12 +1,9 @@
-import { pgTable, serial, text, timestamp, pgEnum, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
 import { eq, and, relations } from 'drizzle-orm';
 import { db } from '../client';
 
 import { usersTable } from './users';
 import { filesTable } from './files';
-
-export const UploadStatuses = ['PENDING', 'UPLOADED', 'PROCESSING', 'FAILED'] as const;
-export const uploadStatusEnum = pgEnum('upload_status', UploadStatuses);
 
 export const messagesTable = pgTable('messages', {
   id: serial('id').primaryKey(), // TODO: make this a UUID

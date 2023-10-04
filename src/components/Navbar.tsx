@@ -1,14 +1,14 @@
-import Link from 'next/link'
-import MaxWidthWrapper from './MaxWidthWrapper'
-import { buttonVariants } from '@/components/ui/button'
-import { LoginLink, RegisterLink } from '@kinde-oss/kinde-auth-nextjs/server'
-import { ArrowRightIcon } from 'lucide-react'
+import Link from 'next/link';
+import MaxWidthWrapper from './MaxWidthWrapper';
+import { buttonVariants } from '@/components/ui/button';
+import { LoginLink, RegisterLink } from '@kinde-oss/kinde-auth-nextjs/server';
+import { ArrowRightIcon } from 'lucide-react';
 
 const Navbar = () => {
   return (
-    <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all">
+    <nav className="sticky w-full h-14 inset-x-0 top-0 z-30 backdrop-blur-lg transition-all border-b bg-white/75 border-gray-200 dark:bg-black/75 dark:border-gray-700">
       <MaxWidthWrapper>
-        <div className="flex h-14 items-center justify-between border-b border-zinc-200">
+        <div className="flex items-center justify-between h-14 border-b border-zinc-200 dark:border-slate-700">
           <Link href="/" className="flex z-40 font-semibold">
             <span>quill.</span>
           </Link>
@@ -30,7 +30,7 @@ const Navbar = () => {
         </div>
       </MaxWidthWrapper>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

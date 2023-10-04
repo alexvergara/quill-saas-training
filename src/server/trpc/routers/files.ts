@@ -2,6 +2,7 @@ import { privateProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
+import { vectorizePDF } from '@/lib/pinecone';
 import { files } from '@/server/db/schema';
 
 export const filesRouter = {
@@ -20,11 +21,33 @@ export const filesRouter = {
   getUserFileUploadStatus: privateProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
     const { userId } = ctx;
 
-    const file = await files.getUserFileById(userId, input.id);
+    const _files = await files.getUserFileById(userId, input.id);
 
-    if (!file.length) return { uploadStatus: files.UploadStatuses[0] };
+    if (!_files.length) return { uploadStatus: files.UploadStatuses[0] };
 
-    return { uploadStatus: file[0].uploadStatus } as { uploadStatus: string };
+    const file = _files[0];
+
+    // TODO: Move to a function on files ???
+    if (file.uploadStatus === files.UploadStatuses.find((status) => status === 'VECTOR_FAIL')) {
+      // TODO: find a better way to do this in every place used (get enum values)
+      console.log('Retries', file.retry, file.retry < 3);
+      if (file.retry < 3) {
+        file.retry = file.retry + 1;
+        try {
+          console.log('vectorizing', file.url, file.id);
+          if (await vectorizePDF(file.url, file.id)) {
+            console.log('vectorized');
+            file.uploadStatus = files.UploadStatuses.find((item) => item === 'SUCCESS') || 'SUCCESS';
+          }
+        } catch (e) {
+          console.log('error', e);
+        }
+
+        await files.updateFile(file.id, file);
+      }
+    }
+
+    return { uploadStatus: file.uploadStatus }; // as { uploadStatus: string };
   }),
 
   getUserFileByKey: privateProcedure.input(z.object({ key: z.string() })).mutation(async ({ ctx, input }) => {

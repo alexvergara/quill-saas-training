@@ -1,13 +1,36 @@
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { PineconeStore } from 'langchain/vectorstores/pinecone';
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
-import { Pinecone } from '@pinecone-database/pinecone';
+//import { Pinecone } from '@pinecone-database/pinecone';
+import { PineconeClient } from '@pinecone-database/pinecone';
 
-export const pinecone = new Pinecone({
+let pineconeInstance: { pineconeIndex: any; embeddings: any } | null = null;
+export const getPineconeInstance = async () => {
+  if (pineconeInstance) return pineconeInstance;
+
+  const pinecone = await getPineconeClient(); // TODO: Singleton ?
+  const pineconeIndex = await pinecone.Index(process.env.PINECONE_INDEX!);
+  const embeddings = new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY! });
+
+  return (pineconeInstance = { pineconeIndex, embeddings });
+};
+
+/*export const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,
   environment: process.env.PINECONE_ENVIRONMENT!
-});
+});*/
+export const getPineconeClient = async () => {
+  const client = new PineconeClient();
 
+  await client.init({
+    apiKey: process.env.PINECONE_API_KEY!,
+    environment: process.env.PINECONE_ENVIRONMENT!
+  });
+
+  return client;
+};
+
+// vectorize and index entire document
 export const vectorizePDF = async (url: string, fileId: number) => {
   const response = await fetch(url);
   const blob = await response.blob();
@@ -15,16 +38,22 @@ export const vectorizePDF = async (url: string, fileId: number) => {
   const pageLevelDocs = await loader.load();
   const pagesAmt = pageLevelDocs.length;
 
-  console.log('vectorizing', url, fileId);
+  const { pineconeIndex, embeddings } = await getPineconeInstance();
 
-  // vectorize and index entire document
+  //await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, id: fileId.toString() });
+  await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, namespace: fileId.toString() });
 
-  const pineconeIndex = await pinecone.index('quill');
-  const embeddings = new OpenAIEmbeddings({
-    openAIApiKey: process.env.OPENAI_API_KEY!
-  });
+  return true;
+};
 
-  await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, id: fileId.toString() });
+// vectorize message
+export const vectorizeMessage = async (message: string, fileId: number) => {
+  const { pineconeIndex, embeddings } = await getPineconeInstance();
+
+  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex, namespace: fileId.toString() });
+
+  //await pineconeIndex.upsert({ id: message.id, vector });
+  await pineconeIndex.upsert({ id: message, vector });
 
   return true;
 };
