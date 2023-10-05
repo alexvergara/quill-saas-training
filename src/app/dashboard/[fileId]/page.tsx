@@ -24,6 +24,7 @@ const SingleFilePage = ({ params }: PageProps) => {
   if (!isLoading && (!file || !file.length)) return notFound();
 
   return (
+    /* Document Viewer */
     <div className="flex-1 justify-between flex flex-col h-[calc(100vh-3.5rem)]">
       <div className="mx-auto w-full max-w-8xl grow lg:flex xl:px-2">
         {/* File viewer */}
@@ -34,7 +35,7 @@ const SingleFilePage = ({ params }: PageProps) => {
         </div>
 
         {/* Chat */}
-        <div className="shrink-8 flex-[0.75] border-t border-gray-200 lg:w-96 lg:border-l lg:border-t-0">
+        <div className="shrink-8 flex-[0.75] border-t border-gray-200 dark:border-slate-500 lg:w-96 lg:border-l lg:border-t-0">
           <ChatWrapper fileId={(file && file[0].id) || 0} />
         </div>
       </div>

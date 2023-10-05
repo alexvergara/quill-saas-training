@@ -1,5 +1,6 @@
 import { createUploadthing, type FileRouter } from 'uploadthing/next';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+//import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import { getAuth } from '@clerk/nextjs/server';
 import { vectorizePDF } from '@/lib/pinecone';
 import { files } from '@/server/db/schema';
 
@@ -8,12 +9,14 @@ const f = createUploadthing();
 export const ourFileRouter = {
   pdfUploader: f({ pdf: { maxFileSize: '4MB' } })
     .middleware(async ({ req }) => {
-      const { getUser } = getKindeServerSession();
+      /*const { getUser } = getKindeServerSession();
       const user = await getUser();
+      const userId = user?.id;*/
+      const { userId } = getAuth(req);
 
-      if (!user) throw new Error('Unauthorized');
+      if (!userId) throw new Error('Unauthorized');
 
-      return { userId: user.id };
+      return { userId: userId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       //const statues = files.UploadStatuses.reduce((acc, item) => { return { ...acc, [item]: item }, {} } as any);

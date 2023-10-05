@@ -6,20 +6,20 @@ import { useMutation } from '@tanstack/react-query';
 export type StreamResponse = {
   message: string;
   isLoading: boolean;
-  addMessage: (message: string) => void;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  addMessage: () => void;
+  handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 };
 
 export interface ChatContextProps {
-  fileId: string;
+  fileId: number;
   children: React.ReactNode;
 }
 
 export const ChatContext = React.createContext<StreamResponse>({
   message: '',
   isLoading: false,
-  addMessage: (message: string) => {},
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => {}
+  addMessage: () => {},
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {}
 });
 
 export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
@@ -29,7 +29,9 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
-      const response = await fetch(`/api/messages/stream/${fileId}`, {
+      console.log(message);
+
+      const response = await fetch(`/api/messages/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileId, message })
@@ -43,8 +45,11 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
     }
   });
 
-  const addMessage = async (message: string) => sendMessage({ message });
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value);
+  const addMessage = async () => sendMessage({ message });
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value);
 
-  return <ChatContext.Provider value={{ message, addMessage, handleInputChange, isLoading }}>{children}</ChatContext.Provider>;
+  return (
+    /* Chat context */
+    <ChatContext.Provider value={{ message, addMessage, handleInputChange, isLoading }}>{children}</ChatContext.Provider>
+  );
 };

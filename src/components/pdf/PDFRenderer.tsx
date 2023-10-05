@@ -36,7 +36,8 @@ export const PDFRenderer = ({ url }: { url: string }) => {
   const renderDocument = <PDFDocument url={url} page={pageNumber} scale={scale} rotate={rotate} setNumPages={setNumPages} />;
 
   return (
-    <div className="flex flex-col items-center w-full rounded-md shadow bg-white dark:bg-slate-900">
+    /* PDF renderer */
+    <div className="flex flex-col items-center w-full rounded-md shadow bg-white dark:bg-slate-800">
       <div className="flex items-center justify-between px-2 w-full h-14 border-b border-zinc-200 dark:border-slate-700">
         {numPages ? (
           <>
@@ -49,7 +50,7 @@ export const PDFRenderer = ({ url }: { url: string }) => {
                 {/* <Input {...register('pageNumber')} className={cn('w-auto h-8 text-center', errors.pageNumber && 'outline-red-500')} onKeyDown={(e) => (e.key === 'Enter' ? handleSubmit(handlePageSubmit) : false)} /> */}
                 <Input type="number" min={1} max={numPages} value={refNumber.current || ''} onFocus={(e) => e.currentTarget.select()} onChange={(e) => handlePageNumber(0, e)} className="w-auto h-8 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                 <p className="space-x-1 text-sm text-zinc-700 dark:text-slate-50">
-                  /<span className="font-semibold">{numPages}</span>
+                  / <span className="font-semibold ml-1">{numPages}</span>
                 </p>
               </div>
 

@@ -1,9 +1,10 @@
 import { pgTable, serial, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
-import { eq, and, relations } from 'drizzle-orm';
+import { eq, lte, and, asc, desc, relations } from 'drizzle-orm';
 import { db } from '../client';
 
 import { usersTable } from './users';
 import { filesTable } from './files';
+import { INFINITE_QUERY_LIMIT } from '@/config';
 
 export const messagesTable = pgTable('messages', {
   id: serial('id').primaryKey(), // TODO: make this a UUID
@@ -41,6 +42,18 @@ export const getUserMessageById = (userId: string, id: number) => {
     .from(messagesTable)
     .where(and(eq(messagesTable.userId, userId), eq(messagesTable.id, id)))
     .limit(1);
+};
+
+export const getUserMessagesByFileId = (userId: string, fileId: number, limit = INFINITE_QUERY_LIMIT, cursor?: number) => {
+  return (
+    db
+      .select({ id: messagesTable.id, text: messagesTable.text, createdAt: messagesTable.createdAt, isUserMessage: messagesTable.isUserMessage })
+      .from(messagesTable)
+      .where(and(eq(messagesTable.userId, userId), eq(messagesTable.fileId, fileId), lte(messagesTable.id, cursor || 2147483647))) // TODO: Find a better way
+      .limit(limit + 1)
+      //.orderBy(asc(messagesTable.createdAt));
+      .orderBy(desc(messagesTable.createdAt))
+  );
 };
 
 export const insertMessage = async (message: NewMessage): Promise<Message[]> => {

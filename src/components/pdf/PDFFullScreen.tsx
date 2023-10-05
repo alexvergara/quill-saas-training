@@ -9,6 +9,7 @@ const PDFFullScreen = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
 
   return (
+    /* PDF fullscreen */
     <Dialog open={isOpen} onOpenChange={(visible) => (visible ? false : setIsOpen(visible))}>
       <DialogTrigger asChild>
         <Button variant="ghost" className="gap-1.5" aria-label="Fullscreen" onClick={() => setIsOpen(true)}>

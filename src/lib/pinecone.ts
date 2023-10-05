@@ -4,6 +4,11 @@ import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 //import { Pinecone } from '@pinecone-database/pinecone';
 import { PineconeClient } from '@pinecone-database/pinecone';
 
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions.mjs';
+import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { getOpenAIInstance, prompts } from './openai';
+import { messages } from '@/server/db/schema';
+
 let pineconeInstance: { pineconeIndex: any; embeddings: any } | null = null;
 export const getPineconeInstance = async () => {
   if (pineconeInstance) return pineconeInstance;
@@ -46,14 +51,42 @@ export const vectorizePDF = async (url: string, fileId: number) => {
   return true;
 };
 
-// vectorize message
-export const vectorizeMessage = async (message: string, fileId: number) => {
+// vectorize message, fire search and create stream
+export const getMessagesStream = async (userId: string, fileId: number, message: string) => {
   const { pineconeIndex, embeddings } = await getPineconeInstance();
 
   const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex, namespace: fileId.toString() });
+  const results = await vectorStore.similaritySearch(message, 4); // TODO: Config ?
+  const prevMessages = await messages.getUserMessagesByFileId(userId, fileId, 6); // TODO: Config ?
 
-  //await pineconeIndex.upsert({ id: message.id, vector });
-  await pineconeIndex.upsert({ id: message, vector });
+  const formattedMessages = prevMessages.map((message) => ({
+    role: message.isUserMessage ? ('User' as const) : ('Assistant' as const),
+    content: message.text
+  }));
 
-  return true;
+  const previousConversation = formattedMessages.map((message) => `${message.role}: ${message.content}\n`).join('\n');
+  const context = results.map((result) => result.pageContent).join('\n\n');
+
+  const chatMessages = prompts.chatMessages;
+  chatMessages[1].content = chatMessages[1].content.replace('XXX-PREVIOUS-CONVERSATION-XXX', previousConversation).replace('XXX-CONTEXT-XXX', context).replace('XXX-MESSAGE-XXX', message);
+
+  console.log('chatMessages', chatMessages);
+  const response = await getOpenAIInstance().chat.completions.create({
+    model: 'gpt-3.5-turbo', // TODO: Config ?
+    temperature: 0, // TODO: Config ?
+    stream: true,
+    messages: chatMessages as ChatCompletionMessageParam[]
+  });
+
+  const stream = OpenAIStream(response, {
+    async onCompletion(completion) {
+      await messages.insertMessage({
+        text: completion,
+        fileId,
+        userId
+      });
+    }
+  });
+
+  return new StreamingTextResponse(stream);
 };

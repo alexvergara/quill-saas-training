@@ -15,6 +15,7 @@ const PDFDocument = ({ url, page, scale, rotate, setNumPages }: { url: string; p
   const { toast } = useToast();
 
   return (
+    /* PDF document */
     <div ref={ref}>
       <Document
         file={url}
