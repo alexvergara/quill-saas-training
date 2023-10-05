@@ -14,7 +14,7 @@ export const usersRouter = {
 
     //if (!user || !user.id || !user.email) {
     if (!user || !user.id || !user.emailAddresses.length) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' });
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: `You must be logged in to access this route (users.authCallback).` });
     }
 
     const dbUser = await users.getUserById(user.id);

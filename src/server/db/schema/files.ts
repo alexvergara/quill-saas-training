@@ -74,5 +74,7 @@ export const updateFile = async (id: number, file: NewFile): Promise<File[]> => 
 };
 
 export const deleteFile = async (id: number): Promise<File[]> => {
+  await db.delete(messagesTable).where(eq(messagesTable.fileId, id)); // TODO: Cascade ?
+
   return db.delete(filesTable).where(eq(filesTable.id, id)).returning();
 };

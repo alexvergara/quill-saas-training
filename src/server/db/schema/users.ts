@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { eq, relations } from 'drizzle-orm';
 import { db } from '../client';
 
@@ -12,12 +12,17 @@ export const usersTable = pgTable('users', {
   // fullName: text('full_name'),
   // phone: varchar('phone', { length: 256 }),
   // image: text('image').notNull(),
+
+  // TODO: Use generic payment providers or create a custom table for this
+
+  stripePriceId: text('stripe_price_id'), // .unique() creates conflicts
   stripeCustomerId: text('stripe_customer_id'), // .unique() creates conflicts
   stripeSubscriptionId: text('stripe_subscription_id'), // .unique() creates conflicts
-  stripePriceId: text('stripe_price_id'), // .unique() creates conflicts
   stripeCurrentPeriodEnd: timestamp('stripe_current_period_end_at'),
+  stripeSubscriptionStatus: text('stripe_subscription_status'),
 
-  createdAt: timestamp('created_at').defaultNow().notNull()
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
 });
 
 export const usersTableRelations = relations(usersTable, ({ many }) => ({
@@ -39,3 +44,23 @@ export const getUserById = (id: string) => {
 export const insertUser = async (user: NewUser): Promise<User[]> => {
   return db.insert(usersTable).values(user).returning();
 };
+
+export const updateUser = async (id: string, user: NewUser): Promise<User[]> => {
+  if (user.id && user.id !== id) throw new Error(`User ID mismatch: ${user.id} !== ${id}`);
+  delete user.createdAt;
+  user.updatedAt = new Date();  
+  return db.update(usersTable).set(user).where(eq(usersTable.id, id)).returning();
+};
+
+export const updateUserBySubscriptionId = async (stripeSubscriptionId: string, user: NewUser): Promise<User[]> => {
+  const _user = {
+    stripePriceId: user.stripePriceId,
+    stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
+    stripeSubscriptionStatus: user.stripeSubscriptionStatus,
+    updatedAt: new Date()
+  }
+  return db.update(usersTable).set(_user).where(eq(usersTable.stripeSubscriptionId, stripeSubscriptionId)).returning();
+};
+
+
+updateUserBySubscriptionId

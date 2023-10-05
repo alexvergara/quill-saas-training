@@ -72,7 +72,7 @@ export const filesRouter = {
     }
 
     if (file[0].userId !== userId) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' });
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: `You can\'t remove this file ([user: ${userId}] files.deleteUserFile: ${id}).` });
     }
 
     return await files.deleteFile(id);

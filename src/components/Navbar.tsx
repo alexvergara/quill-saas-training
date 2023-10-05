@@ -5,6 +5,7 @@ import { currentUser, UserButton, SignInButton, SignUpButton, SignOutButton } fr
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ArrowRightIcon } from 'lucide-react';
 import MaxWidthWrapper from './MaxWidthWrapper';
+import MobileNavbar from './MobileNavbar';
 
 const Navbar = async () => {
   const user: User | null = await currentUser();
@@ -19,38 +20,41 @@ const Navbar = async () => {
 
           {/* TODO: add mobile navbar */}
 
-          <div className="hidden items-center space-x-4 sm:flex">
-            <>
-              <Link href="/pricing" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
-                Pricing
-              </Link>
-              {/* <LoginLink className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign in</LoginLink>
-              <RegisterLink className={buttonVariants({ size: 'sm' })}>
-                Get started
-                <ArrowRightIcon className="w-5 h-5 ml-1.5" />
-              </RegisterLink> */}
+          <MobileNavbar isGuest={!user} />
 
-              {!user ? (
-                <>
-                  <SignInButton>
-                    <Button className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign in</Button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <Button className={buttonVariants({ size: 'sm' })}>
-                      Get started
-                      <ArrowRightIcon className="w-5 h-5 ml-1.5" />
-                    </Button>
-                  </SignUpButton>
-                </>
-              ) : (
-                <>
-                  <SignOutButton>
-                    <Button className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign out</Button>
-                  </SignOutButton>
-                  <UserButton afterSignOutUrl="/" />
-                </>
-              )}
-            </>
+          <div className="hidden items-center space-x-4 sm:flex">
+            {!user ? (
+              <>
+                <Link href="/pricing" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+                  Pricing
+                </Link>
+                {/* <LoginLink className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign in</LoginLink>
+                <RegisterLink className={buttonVariants({ size: 'sm' })}>
+                  Get started
+                  <ArrowRightIcon className="w-5 h-5 ml-1.5" />
+                </RegisterLink> */}
+
+                <SignInButton>
+                  <Button className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign in</Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button className={buttonVariants({ size: 'sm' })}>
+                    Get started
+                    <ArrowRightIcon className="w-5 h-5 ml-1.5" />
+                  </Button>
+                </SignUpButton>
+              </>
+            ) : (
+              <>
+                <Link href="/dashboard" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+                  Dashboard
+                </Link>
+                {/* <SignOutButton>
+                  <Button className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign out</Button>
+                </SignOutButton> */}
+                <UserButton afterSignOutUrl="/" />
+              </>
+            )}
           </div>
         </div>
       </MaxWidthWrapper>

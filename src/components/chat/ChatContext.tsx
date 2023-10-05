@@ -2,6 +2,8 @@ import React from 'react';
 
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation } from '@tanstack/react-query';
+import { trpc } from '@/app/_trpc/client';
+import { INFINITE_QUERY_LIMIT } from '@/config';
 
 export type StreamResponse = {
   message: string;
@@ -27,6 +29,9 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
   const [message, setMessage] = React.useState<string>('');
   const { toast } = useToast();
 
+  const backupMessage = React.useRef<string>('');
+  const utils = trpc.useContext();
+
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
       console.log(message);
@@ -42,6 +47,109 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
       }
 
       return response.body;
+    },
+    onMutate: async ({ message }) => {
+      backupMessage.current = message;
+      setMessage('');
+
+      await utils.getUserMessagesByFileId.cancel();
+
+      const previousMessages = utils.getUserMessagesByFileId.getInfiniteData();
+
+      utils.getUserMessagesByFileId.setInfiniteData({ fileId, limit: INFINITE_QUERY_LIMIT }, (old) => {
+        if (!old) return { pages: [], pageParams: [] };
+
+        let newPages = [...old.pages];
+        let latestPage = newPages[0]!;
+
+        latestPage.messages = [
+          {
+            id: 0, // Math.random(),
+            text: message,
+            createdAt: new Date().toISOString(),
+            isUserMessage: true
+          },
+          ...latestPage.messages
+        ];
+
+        newPages[0] = latestPage;
+
+        return { ...old, pages: newPages };
+      });
+
+      setIsLoading(true);
+
+      return { previousMessages: previousMessages?.pages.map((page) => page.messages).flat() || [] };
+    },
+    onError: (_, __, context) => {
+      setMessage(backupMessage.current);
+      utils.getUserMessagesByFileId.setData({ fileId }, { messages: context?.previousMessages || [] });
+      //toast.error('Failed to send message');
+    },
+    onSuccess: async (stream) => {
+      setIsLoading(false);
+      if (!stream) {
+        return toast({
+          title: 'There was a problem sending this message',
+          description: 'Please refresh the page and try again.',
+          variant: 'destructive'
+        });
+      }
+
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      let accumulatedResponse = '';
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedResponse += chunk;
+
+          utils.getUserMessagesByFileId.setInfiniteData({ fileId, limit: INFINITE_QUERY_LIMIT }, (old) => {
+            if (!old) return { pages: [], pageParams: [] };
+
+            let isAIResponseCreated = old.pages.some((page) => page.messages.some((message) => message.id === -2)); //'ai-message' ));
+
+            let updatePages = old.pages.map((page) => {
+              if (page === old.pages[0]) {
+                let updatedMessages;
+
+                if (!isAIResponseCreated) {
+                  updatedMessages = [
+                    {
+                      id: -2,
+                      text: accumulatedResponse,
+                      createdAt: new Date().toISOString(),
+                      isUserMessage: false
+                    },
+                    ...page.messages
+                  ];
+                } else {
+                  updatedMessages = page.messages.map((message) => {
+                    if (message.id === -2) {
+                      return { ...message, text: accumulatedResponse };
+                    }
+                    return message;
+                  });
+                }
+
+                return { ...page, messages: updatedMessages };
+              }
+
+              return page;
+            });
+
+            return { ...old, pages: updatePages };
+          });
+        }
+      }
+    },
+    onSettled: async () => {
+      setIsLoading(false);
+      await utils.getUserMessagesByFileId.invalidate();
     }
   });
 

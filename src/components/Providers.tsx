@@ -5,6 +5,7 @@ import React from 'react';
 //import { ClerkProvider } from '@clerk/nextjs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
+import { getBaseUrl } from '@/lib/utils';
 import { trpc } from '@app/_trpc/client';
 
 /*import { appWithTranslation, useTranslation } from 'next-i18next';
@@ -13,12 +14,12 @@ const { i18n } = useTranslation();
 const { language: currentLanguage } = i18n;
 const clerkProps = currentLanguage === 'es' ? { localization: esES } : {};*/
 
-function getBaseUrl() {
+/*function getBaseUrl() {
   if (typeof window !== 'undefined') return '';
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   if (process.env.RENDER_INTERNAL_HOSTNAME) return `http://${process.env.RENDER_INTERNAL_HOSTNAME}:${process.env.SERVER_PORT}`;
   return `${process.env.SERVER_HOST ?? 'http://localhost'}:${process.env.SERVER_PORT ?? 3000}`;
-}
+}*/
 
 const Providers = ({ children }: React.PropsWithChildren) => {
   const [queryClient] = React.useState(() => new QueryClient());

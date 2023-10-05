@@ -11,7 +11,7 @@ const isAuth = t.middleware(async (opts) => {
   const user: User | null = await currentUser();
 
   if (!user?.id) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You must be logged in to access this route (isAuthMiddleware).' });
   }
 
   return opts.next({ ctx: { user, userId: user.id } });

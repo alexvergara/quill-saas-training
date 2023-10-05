@@ -22,8 +22,6 @@ export const messagesRouter = {
     const { userId } = ctx;
     const { fileId, limit, cursor } = input;
 
-    console.log('getUserMessagesByFileId', { userId, fileId, limit, cursor });
-
     const chatMessages = await messages.getUserMessagesByFileId(userId, fileId, limit, cursor);
     if (!chatMessages.length) {
       throw new TRPCError({ code: 'NOT_FOUND' });
@@ -31,8 +29,8 @@ export const messagesRouter = {
 
     let nextCursor;
     if (chatMessages.length > limit) {
-      nextCursor = chatMessages.pop()?.id;
-      chatMessages.pop();
+      const lastMessage = chatMessages.pop();
+      nextCursor = lastMessage!.id;
     }
 
     return { messages: chatMessages, nextCursor };
@@ -49,7 +47,7 @@ export const messagesRouter = {
     }
 
     if (message[0].userId !== userId) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' });
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: `You can\'t remove this message ([user: ${userId}] messages.deleteUserMessage: ${id}).` });
     }
 
     return await messages.deleteMessage(id);
