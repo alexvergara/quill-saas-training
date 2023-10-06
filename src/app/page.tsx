@@ -3,8 +3,13 @@ import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import { ArrowRightIcon } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import Image from 'next/image';
+import { getUserByPublicId } from '@/server/db/utils';
 
-const HomePage = () => {
+const HomePage = async () => {
+  const user = await getUserByPublicId('cku1q2q6d0000g1t6q1q2q6d0');
+
+  console.log('cku1q2q6d0000g1t6q1q2q6d0', user);
+
   return (
     <>
       <MaxWidthWrapper className="flex flex-col items-center justify-center mb-12 mt-28 sm:mt-40 text-center">
@@ -67,11 +72,11 @@ const HomePage = () => {
           {/* // TODO: Component ? */}
           <li className="md:flex-1">
             <div className="flex flex-col space-y-2 border-l-4 py-2 pl-4 md:border-l-0 md:border-t-2 md:pb-0 md:pl-0 md:pt-4 border-zinc-300 dark:border-slate-600">
-              <span className="text-sm font-medium text-blue-600 dark:text-cyan-300">Step 1</span>
+              <span className="text-sm font-medium text-blue-600 dark:text-blue-300">Step 1</span>
               <span className="text-xl font-semibold">Sing up for an account</span>
               <span className="mt-2 text-zinc-700 dark:text-slate-200">
-                Either starting out with a free plan or choose our{' '}
-                <Link href="/pricing" className="text-blue-700 underline underline-offset-2">
+                Either starting out with a free plan or choose our
+                <Link href="/pricing" className="text-blue-700 underline underline-offset-2 dark:text-blue-200 ml-2">
                   pro plan
                 </Link>
               </span>
@@ -79,14 +84,14 @@ const HomePage = () => {
           </li>
           <li className="md:flex-1">
             <div className="flex flex-col space-y-2 border-l-4 py-2 pl-4 md:border-l-0 md:border-t-2 md:pb-0 md:pl-0 md:pt-4 border-zinc-300 dark:border-slate-600">
-              <span className="text-sm font-medium text-blue-600 dark:text-cyan-300">Step 2</span>
+              <span className="text-sm font-medium text-blue-600 dark:text-blue-300">Step 2</span>
               <span className="text-xl font-semibold">Upload your PDF file</span>
               <span className="mt-2 text-zinc-700 dark:text-slate-200">We&apos;ll process your file and make it ready for you to chat with.</span>
             </div>
           </li>{' '}
           <li className="md:flex-1">
             <div className="flex flex-col space-y-2 border-l-4 py-2 pl-4 md:border-l-0 md:border-t-2 md:pb-0 md:pl-0 md:pt-4 border-zinc-300 dark:border-slate-600">
-              <span className="text-sm font-medium text-blue-600 dark:text-cyan-300">Step 3</span>
+              <span className="text-sm font-medium text-blue-600 dark:text-blue-300">Step 3</span>
               <span className="text-xl font-semibold">Start asking questions</span>
               <span className="mt-2 text-zinc-700 dark:text-slate-200">It&apos;s that simple. Try out Quill today - it really takes less than a minute.</span>
             </div>

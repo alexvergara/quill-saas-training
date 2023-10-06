@@ -3,11 +3,11 @@
 import React from 'react';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { GhostIcon, Loader2Icon, MessageSquareIcon, PlusIcon, TrashIcon } from 'lucide-react';
-import { trpc } from '@app/_trpc/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { trpc } from '@app/_trpc/client';
 
 import UploadButton from './UploadButton';
 
@@ -54,10 +54,10 @@ const Dashboard = () => {
       ) : userFiles && userFiles.length > 0 ? (
         <ul className="mt-8 grid grid-cols-1 gap-6 divide-y divide-zinc-2 md:grid-cols-2 lg:grid-cols-3">
           {userFiles.map((file) => (
-            <li className="col-span-1 divide-y rounded-lg shadow transition hover:shadow-lg bg-white divide-gray-200 dark:bg-black dark:divide-gray-700" key={file.id}>
-              <Link href={`/dashboard/${file.id}`} className="flex flex-col gap-2">
+            <li className="col-span-1 divide-y rounded-lg shadow transition hover:shadow-lg bg-white divide-gray-200 dark:bg-gray-800 dark:divide-gray-700" key={file.id}>
+              <Link href={`/dashboard/${file.public_id}`} className="flex flex-col gap-2">
                 <div className="pt-6 px-6 flex w-full items-center justify-between space-x-6">
-                  <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 dark:from-blue-500 dark:to-cyan-500" />
+                  <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 dark:from-cyan-400 dark:to-blue-400" />
                   <div className="flex-1 truncate">
                     <div className="flex items-center space-x-3">
                       <h3 className="truncate text-lg font-medium text-zinc-900 dark:text-slate-50">{file.name}</h3>
@@ -66,7 +66,7 @@ const Dashboard = () => {
                 </div>
               </Link>
 
-              <div className="px-6 mt-4 grid grid-cols-3 place-items-center py-2 gap-6 text-xs text-zinc-500 dark:text-slate-500">
+              <div className="px-6 mt-4 grid grid-cols-3 place-items-center py-2 gap-6 text-xs text-zinc-500 dark:text-slate-400">
                 <div className="flex items-center gap-2">
                   <PlusIcon className="w-4 h-4" />
                   {format(new Date(file.createdAt), 'MMM yyyy')}
@@ -86,7 +86,7 @@ const Dashboard = () => {
         </ul>
       ) : (
         <div className="mt-16 flex flex-col items-center gap-2">
-          <GhostIcon className="w-8 h-8 text-zinc-800" />
+          <GhostIcon className="w-8 h-8 text-zinc-800 dark:text-zinc-100" />
           <h3 className="font-semibold text-xl">Pretty empty around here</h3>
           <p>Let&apos;s upload your first PDF.</p>
         </div>

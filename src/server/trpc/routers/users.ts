@@ -1,27 +1,21 @@
 //import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import type { User } from '@clerk/nextjs/api';
 import { currentUser } from '@clerk/nextjs';
 import { publicProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 
-import { users } from '@/server/db/schema';
+import { getUserByPublicId, insertUser } from '@/server/db/utils';
 
 export const usersRouter = {
   authCallback: publicProcedure.query(async () => {
     /*const { getUser } = getKindeServerSession();
     const user = getUser();*/
-    const user: User | null = await currentUser();
+    const clerkUser = await currentUser();
 
-    //if (!user || !user.id || !user.email) {
-    if (!user || !user.id || !user.emailAddresses.length) {
-      throw new TRPCError({ code: 'UNAUTHORIZED', message: `You must be logged in to access this route (users.authCallback).` });
-    }
+    if (!clerkUser) throw new TRPCError({ code: 'UNAUTHORIZED', message: `You must be logged in to access this route (users.authCallback).` });
 
-    const dbUser = await users.getUserById(user.id);
-
-    if (!dbUser.length) {
-      //await users.insertUser({ id: user.id, email: user.email });
-      await users.insertUser({ id: user.id, email: user.emailAddresses[0].emailAddress });
+    const user = await getUserByPublicId(clerkUser?.id || '');
+    if (!user) {
+      await insertUser({ public_id: clerkUser.id, email: clerkUser.emailAddresses.find((email) => email.id === clerkUser.primaryEmailAddressId)?.emailAddress || '' });
     }
 
     return { success: true };

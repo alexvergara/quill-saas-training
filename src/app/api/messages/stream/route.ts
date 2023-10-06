@@ -2,34 +2,33 @@
 import { getAuth } from '@clerk/nextjs/server';
 import { SendMessageValidator } from '@/lib/validators/SendMessageValidator';
 import { NextRequest } from 'next/server';
-import { files, messages } from '@/server/db/schema';
 import { getMessagesStream } from '@/lib/pinecone';
+import { getUserByPublicId, getUserFileById, insertMessage } from '@/server/db/utils';
 
 export const POST = async (req: NextRequest) => {
   /*const { getUser } = getKindeServerSession();
-  const user = getUser();
-  const userId = user?.id */
+  const user = getUser();*/
 
-  const { userId } = getAuth(req);
+  const { userId: clerkUserId } = getAuth(req);
+  const user = await getUserByPublicId(clerkUserId || '');
 
-  if (!userId) return new Response('Unauthorized', { status: 401 });
+  if (!clerkUserId || !user) return new Response('Unauthorized', { status: 401 });
 
   const body = await req.json();
 
-  console.log('body', req, body);
+  //console.log('body', req, body);
 
+  // TODO: is this necessary ???
   const { fileId, message } = SendMessageValidator.parse(body);
+  const file = await getUserFileById(user.id, fileId);
+  if (!file) return new Response('Not found', { status: 404 });
 
-  const file = await files.getUserFileById(userId, fileId);
-
-  if (!file.length) return new Response('Not found', { status: 404 });
-
-  await messages.insertMessage({
-    text: message,
+  await insertMessage({
+    userId: user.id,
     fileId,
-    userId: userId,
-    isUserMessage: true
+    message,
+    fromUser: true
   });
 
-  return getMessagesStream(userId, fileId, message);
+  return getMessagesStream(user.id, fileId, message);
 };

@@ -2,7 +2,9 @@ import { createUploadthing, type FileRouter } from 'uploadthing/next';
 //import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { getAuth } from '@clerk/nextjs/server';
 import { vectorizePDF } from '@/lib/pinecone';
-import { files } from '@/server/db/schema';
+
+import { getUserByPublicId, insertFile, updateFile } from '@/server/db/utils';
+import { uploadStatusEnum } from '@/server/db/schema';
 
 const f = createUploadthing();
 
@@ -12,16 +14,19 @@ export const ourFileRouter = {
       /*const { getUser } = getKindeServerSession();
       const user = await getUser();
       const userId = user?.id;*/
-      const { userId } = getAuth(req);
+      const { userId: publicId } = getAuth(req);
+      const user = await getUserByPublicId(publicId || '');
 
-      if (!userId) throw new Error('Unauthorized');
+      if (!publicId || !user) throw new Error('Unauthorized');
 
-      return { userId: userId };
+      return { publicId, userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       //const statues = files.UploadStatuses.reduce((acc, item) => { return { ...acc, [item]: item }, {} } as any);
 
-      const newFile = await files.insertFile({
+      console.log('metadata', metadata);
+
+      const newFile = await insertFile({
         // TODO: Use intermediate file status (PENDING, UPLOADED)
         key: file.key,
         //url: file.url,
@@ -34,19 +39,19 @@ export const ourFileRouter = {
       // TODO: send to queue for processing
 
       // TODO: Move to a function on files ??? // TODO: Remove from here, is running twice
-      let uploadStatus = files.UploadStatuses.find((item) => item === 'FAILED');
+      let uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'FAILED');
       try {
         console.log('vectorizing', file.url, newFile[0].id);
         if (await vectorizePDF(file.url, newFile[0].id)) {
           console.log('vectorized');
-          uploadStatus = files.UploadStatuses.find((item) => item === 'SUCCESS');
+          uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'SUCCESS');
         }
       } catch (e) {
         console.log('error', e);
-        uploadStatus = files.UploadStatuses.find((item) => item === 'VECTOR_FAIL');
+        uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'VECTOR_FAIL');
       }
 
-      await files.updateFile(newFile[0].id, { ...newFile[0], uploadStatus });
+      await updateFile(newFile[0].id, { ...newFile[0], uploadStatus });
 
       //console.log('newFile', newFile);
     })

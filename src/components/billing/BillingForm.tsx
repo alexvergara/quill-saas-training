@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react'
+import React from 'react';
 
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { getUserSubscriptionPlan } from '@/lib/stripe';
@@ -21,20 +21,20 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps) => {
 
   const { mutate: createStripeSession, isLoading } = trpc.createStripeSession.useMutation({
     onSuccess: ({ url }) => {
-      if (url) window.location.href = url
+      if (url) window.location.href = url;
       else {
         toast({
           title: 'There was a problem...',
           description: 'Please try again later.',
           variant: 'destructive'
-        })
+        });
       }
     }
   });
 
   return (
     <MaxWidthWrapper className="max-w-5xl">
-      <form className='mt-12' onSubmit={(e) => { e.preventDefault(); createStripeSession(); }}>
+      {/* <form className='mt-12' onSubmit={(e) => { e.preventDefault(); createStripeSession(); }}>
         <Card>
           <CardHeader>
             <CardTitle>Subscription Plan</CardTitle>
@@ -52,14 +52,14 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps) => {
             {subscriptionPlan.isSubscribed ? (
               <p className='rounded-full text-xs font-medium'>
                 {subscriptionPlan.isCanceled ? 'Your plan will be canceled on ' : 'Your plan renews on '}
-                <b>{format(subscriptionPlan.stripeCurrentPeriodEnd!, 'MMM dd yyyy')}</b> {/* 'yyyy-MM-dd')} {/* // TODO: Use locale format */}
+                <b>{format(subscriptionPlan.stripeCurrentPeriodEnd!, 'MMM dd yyyy')}</b> {/* 'yyyy-MM-dd')} {/* // TODO: Use locale format * /}
               </p>
             ) : 'Upgrade Now'}
           </CardFooter>
         </Card>
-      </form>
-      </MaxWidthWrapper>
-  )
-}
+      </form> */}
+    </MaxWidthWrapper>
+  );
+};
 
-export default BillingForm
+export default BillingForm;

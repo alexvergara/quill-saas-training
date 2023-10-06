@@ -9,7 +9,7 @@ import ChatWrapper from '@/components/chat/ChatWrapper';
 
 interface PageProps {
   params: {
-    fileId: number;
+    fileId: string;
   };
 }
 
@@ -17,11 +17,11 @@ interface PageProps {
 const SingleFilePage = ({ params }: PageProps) => {
   const { fileId } = params;
 
-  if (!fileId || isNaN(fileId)) return notFound();
+  if (!fileId) return notFound();
 
-  const { data: file, isLoading } = trpc.getUserFileById.useQuery({ id: parseInt('0' + (fileId || 0)) }); // TODO: Fix this (Force int)
+  const { data: file, isLoading } = trpc.getUserFileByPublicId.useQuery({ public_id: fileId }); // TODO: Fix this (Force int)
 
-  if (!isLoading && (!file || !file.length)) return notFound();
+  if (!isLoading && !file) return notFound();
 
   return (
     /* Document Viewer */
@@ -30,13 +30,13 @@ const SingleFilePage = ({ params }: PageProps) => {
         {/* File viewer */}
         <div className="flex-1 xl:flex">
           <div className="px-4 py-6 sm:px-6 lg:pl-8 xl:flex-1 xl:pl-6">
-            <PDFRenderer url={(file && file[0].url) || ''} />
+            <PDFRenderer url={file?.url || ''} />
           </div>
         </div>
 
         {/* Chat */}
         <div className="shrink-8 flex-[0.75] border-t border-gray-200 dark:border-slate-500 lg:w-96 lg:border-l lg:border-t-0">
-          <ChatWrapper fileId={(file && file[0].id) || 0} />
+          <ChatWrapper fileId={file?.id || 0} />
         </div>
       </div>
     </div>

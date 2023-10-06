@@ -7,10 +7,10 @@ import { useRouter } from 'next/navigation';
 import { trpc } from '@app/_trpc/client';
 
 import { Button } from '@/components/ui/button';
-import { Progress2 } from '@/components/ui/progress2';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { CloudIcon, FileIcon, Loader2Icon } from 'lucide-react';
-import { toast } from './ui/use-toast';
+import { ProgressWithColor } from '@/components/ui-custom/progress-with-color';
+import { toast } from '@/components/ui/use-toast';
 import Dropzone from 'react-dropzone';
 
 const UploadDropzone = () => {
@@ -34,9 +34,12 @@ const UploadDropzone = () => {
   });
 
   const { mutate: startPolling } = trpc.getUserFileByKey.useMutation({
-    onSuccess: (file) => router.push(`/dashboard/${file.id}`),
-    retry: true,
-    retryDelay: 500
+    onSuccess: (file) => router.push(`/dashboard/${file.public_id}`),
+    retry: 5,
+    retryDelay: 1000
+
+    // TODO: The retry must not be infinite, but only for a certain amount of time
+
     /*onError: (error) => {
       console.error(error);
       toast({ title: 'Something went wrong', description: error.message, variant: 'destructive' });
@@ -72,7 +75,7 @@ const UploadDropzone = () => {
 
               {isUploading ? (
                 <div className="w-full mt-4 max-w-xs mx-auto">
-                  <Progress2 value={uploadProgress} indicatorColor={uploadProgress === 100 ? 'bg-green-500' : ''} className="h-1 w-full bg-zinc-200" />
+                  <ProgressWithColor value={uploadProgress} indicatorClassName={uploadProgress === 100 ? 'bg-green-500' : ''} className="h-1 w-full bg-zinc-200" />
                   {uploadProgress === 100 ? (
                     <div className="flex gap-1 items-center justify-center text-sm text-zinc-700 text-center p-2">
                       <Loader2Icon className="h-3 w-3 animate-spin" />

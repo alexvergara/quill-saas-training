@@ -1,20 +1,19 @@
 //import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import type { User } from '@clerk/nextjs/api';
 import { currentUser } from '@clerk/nextjs';
 import { TRPCError, initTRPC } from '@trpc/server';
+import { getUserByPublicId } from '../db/utils';
 
 const t = initTRPC.create();
 
 const isAuth = t.middleware(async (opts) => {
   /*const { getUser } = getKindeServerSession();
   const user = getUser();*/
-  const user: User | null = await currentUser();
+  const clerkUser = await currentUser();
+  const user = await getUserByPublicId(clerkUser?.id || '');
 
-  if (!user?.id) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You must be logged in to access this route (isAuthMiddleware).' });
-  }
+  if (!clerkUser || !user) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You must be logged in to access this route (isAuthMiddleware).' });
 
-  return opts.next({ ctx: { user, userId: user.id } });
+  return opts.next({ ctx: { userId: user.id, publicId: clerkUser.id, clerkUser, user } });
 });
 
 export const router = t.router;

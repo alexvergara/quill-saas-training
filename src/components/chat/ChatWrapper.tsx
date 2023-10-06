@@ -23,7 +23,7 @@ const ChatWrapper = ({ fileId }: { fileId: number }) => {
           <ChatMessages fileId={fileId} />
         </div>
 
-        <ChatInput isDisabled />
+        <ChatInput isDisabled={data?.uploadStatus !== 'SUCCESS'} />
       </div>
     </ChatContextProvider>
   );

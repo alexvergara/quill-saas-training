@@ -8,7 +8,7 @@ import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
 import Providers from '@/components/Providers';
-import Navbar from '@/components/Navbar';
+import Navbar from '@/components/navs/Navbar';
 
 /*import { appWithTranslation, useTranslation } from 'next-i18next';
 
@@ -38,7 +38,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
     //     }
     //   }}
     >
-      <html lang="en" className="dark">
+      <html lang="en" className="dark1">
         <Providers>
           <body className={cn('min-h-screen font-sans antialiased light:grainy ', inter.className)}>
             <Toaster />

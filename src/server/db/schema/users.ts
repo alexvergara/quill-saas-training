@@ -1,66 +1,50 @@
-import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { eq, relations } from 'drizzle-orm';
-import { db } from '../client';
+import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
-import { filesTable } from './files';
-import { messagesTable } from './messages';
+import { files, messages, subscriptions, type Subscription } from '../schema';
 
-export const usersTable = pgTable('users', {
-  id: text('id').primaryKey(),
+export const users = pgTable('users', {
+  // TODO: Add serial as id an back to external_id as public_id ??? (like id and nanoId approach)
+  id: serial('id').primaryKey(),
+  public_id: text('public_id').unique().notNull(),
   email: text('email').notNull(), // .unique() creates conflicts
-  // name: text('name').notNull(),
-  // fullName: text('full_name'),
-  // phone: varchar('phone', { length: 256 }),
-  // image: text('image').notNull(),
+
+  /*
+  name: text('name').notNull(),
+  phone: varchar('phone', { length: 20 }),
+  image: text('image').notNull(),
+  fullName: text('full_name'),
+  */
 
   // TODO: Use generic payment providers or create a custom table for this
 
-  stripePriceId: text('stripe_price_id'), // .unique() creates conflicts
-  stripeCustomerId: text('stripe_customer_id'), // .unique() creates conflicts
-  stripeSubscriptionId: text('stripe_subscription_id'), // .unique() creates conflicts
-  stripeCurrentPeriodEnd: timestamp('stripe_current_period_end_at'),
-  stripeSubscriptionStatus: text('stripe_subscription_status'),
+  currentSubscriptionId: integer('current_subscription_id'), // .unique() creates conflicts
+
+  /*
+  priceId: text('_price_id'), // .unique() creates conflicts
+  customerId: text('_customer_id'), // .unique() creates conflicts
+  subscriptionId: text('_subscription_id'), // .unique() creates conflicts
+  currentPeriodEnd: timestamp('_current_period_end_at'),
+  subscriptionStatus: text('_subscription_status'),
+  */
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
 });
 
-export const usersTableRelations = relations(usersTable, ({ many }) => ({
-  files: many(filesTable),
-  messages: many(messagesTable)
+export const usersRelations = relations(users, ({ one, many }) => ({
+  files: many(files),
+  messages: many(messages),
+  subscriptions: many(subscriptions),
+  subscription: one(subscriptions, {
+    fields: [users.currentSubscriptionId],
+    references: [subscriptions.id]
+  })
 }));
 
-export type User = typeof usersTable.$inferSelect; // return type when queried
-export type NewUser = typeof usersTable.$inferInsert; // insert type
+export type User = typeof users.$inferSelect; // return type when queried
+export type NewUser = typeof users.$inferInsert; // insert type
 
-export const getAllUsers = async (): Promise<User[]> => {
-  return db.select().from(usersTable);
-};
-
-export const getUserById = (id: string) => {
-  return db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
-};
-
-export const insertUser = async (user: NewUser): Promise<User[]> => {
-  return db.insert(usersTable).values(user).returning();
-};
-
-export const updateUser = async (id: string, user: NewUser): Promise<User[]> => {
-  if (user.id && user.id !== id) throw new Error(`User ID mismatch: ${user.id} !== ${id}`);
-  delete user.createdAt;
-  user.updatedAt = new Date();  
-  return db.update(usersTable).set(user).where(eq(usersTable.id, id)).returning();
-};
-
-export const updateUserBySubscriptionId = async (stripeSubscriptionId: string, user: NewUser): Promise<User[]> => {
-  const _user = {
-    stripePriceId: user.stripePriceId,
-    stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
-    stripeSubscriptionStatus: user.stripeSubscriptionStatus,
-    updatedAt: new Date()
-  }
-  return db.update(usersTable).set(_user).where(eq(usersTable.stripeSubscriptionId, stripeSubscriptionId)).returning();
-};
-
-
-updateUserBySubscriptionId
+export interface UserWithSubscription extends User {
+  subscription?: Subscription;
+}

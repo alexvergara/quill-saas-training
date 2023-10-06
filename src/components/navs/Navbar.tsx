@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { currentUser, UserButton, SignInButton, SignUpButton, SignOutButton } from '@clerk/nextjs';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ArrowRightIcon } from 'lucide-react';
-import MaxWidthWrapper from './MaxWidthWrapper';
+import MaxWidthWrapper from '../MaxWidthWrapper';
 import MobileNavbar from './MobileNavbar';
+import UserAccountNav from './UserAccountNav';
 
 const Navbar = async () => {
   const user: User | null = await currentUser();
@@ -34,7 +35,7 @@ const Navbar = async () => {
                   <ArrowRightIcon className="w-5 h-5 ml-1.5" />
                 </RegisterLink> */}
 
-                <SignInButton>
+                <SignInButton mode="modal">
                   <Button className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign in</Button>
                 </SignInButton>
                 <SignUpButton mode="modal">
@@ -52,6 +53,9 @@ const Navbar = async () => {
                 {/* <SignOutButton>
                   <Button className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Sign out</Button>
                 </SignOutButton> */}
+
+                <UserAccountNav user={user} />
+
                 <UserButton afterSignOutUrl="/" />
               </>
             )}

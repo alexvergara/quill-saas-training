@@ -52,7 +52,7 @@ export const vectorizePDF = async (url: string, fileId: number) => {
 };
 
 // vectorize message, fire search and create stream
-export const getMessagesStream = async (userId: string, fileId: number, message: string) => {
+export const getMessagesStream = async (userId: number, fileId: number, message: string) => {
   const { pineconeIndex, embeddings } = await getPineconeInstance();
 
   const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex, namespace: fileId.toString() });
@@ -60,8 +60,8 @@ export const getMessagesStream = async (userId: string, fileId: number, message:
   const prevMessages = await messages.getUserMessagesByFileId(userId, fileId, 6); // TODO: Config ?
 
   const formattedMessages = prevMessages.map((message) => ({
-    role: message.isUserMessage ? ('User' as const) : ('Assistant' as const),
-    content: message.text
+    role: message.fromUser ? ('User' as const) : ('Assistant' as const),
+    content: message.message
   }));
 
   const previousConversation = formattedMessages.map((message) => `${message.role}: ${message.content}\n`).join('\n');
@@ -81,9 +81,9 @@ export const getMessagesStream = async (userId: string, fileId: number, message:
   const stream = OpenAIStream(response, {
     async onCompletion(completion) {
       await messages.insertMessage({
-        text: completion,
+        userId,
         fileId,
-        userId
+        message: completion
       });
     }
   });

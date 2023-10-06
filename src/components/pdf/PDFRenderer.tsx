@@ -13,10 +13,6 @@ import PDFFullScreen from './PDFFullScreen';
 import PDFDocument from './PDFDocument';
 import Simplebar from 'simplebar-react';
 
-// TODO: Remove from package ?
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-
 export const PDFRenderer = ({ url }: { url: string }) => {
   const refNumber = React.useRef<number>(1);
   const [pageNumber, setPageNumber] = React.useState<number>(1);

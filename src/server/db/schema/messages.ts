@@ -1,80 +1,31 @@
-import { pgTable, serial, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
-import { eq, lte, and, asc, desc, relations, sql } from 'drizzle-orm';
-import { db } from '../client';
+import { pgTable, serial, text, timestamp, integer, boolean, uuid } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
-import { usersTable } from './users';
-import { filesTable } from './files';
+import { users, files } from '../schema';
 
-// TODO: Drizzle bug ?
-//import { INFINITE_QUERY_LIMIT } from '@config';
-//import { INFINITE_QUERY_LIMIT } from '@/config/';
-//import { INFINITE_QUERY_LIMIT } from '@/config/infinite-query';
-//const INFINITE_QUERY_LIMIT = require('@/config/infinite-query').INFINITE_QUERY_LIMIT;
-const INFINITE_QUERY_LIMIT = 10;
-
-export const messagesTable = pgTable('messages', {
+export const messages = pgTable('messages', {
   id: serial('id').primaryKey(), // TODO: make this a UUID
-  text: text('text').notNull(), // .unique() creates conflicts
-  isUserMessage: boolean('is_user_message').default(false),
+  public_id: uuid('public_id').defaultRandom().unique(),
+  message: text('message').notNull(), // .unique() creates conflicts
+  fromUser: boolean('from_user').default(false),
 
-  userId: text('user_id').references(() => usersTable.id),
-  fileId: integer('file_id').references(() => filesTable.id),
+  userId: integer('user_id').notNull(), //.references(() => users.id),
+  fileId: integer('file_id').notNull(), //.references(() => files.id),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at') //.defaultNow().notNull()
 });
 
-export const messagesTableRelations = relations(messagesTable, ({ one }) => ({
-  user: one(usersTable, {
-    fields: [messagesTable.userId],
-    references: [usersTable.id]
+export const messagesTableRelations = relations(messages, ({ one }) => ({
+  user: one(users, {
+    fields: [messages.userId],
+    references: [users.id]
   }),
-  file: one(filesTable, {
-    fields: [messagesTable.fileId],
-    references: [filesTable.id]
+  file: one(files, {
+    fields: [messages.fileId],
+    references: [files.id]
   })
 }));
 
-export type Message = typeof messagesTable.$inferSelect;
-export type NewMessage = typeof messagesTable.$inferInsert;
-
-export const getUserMessages = (id: string) => {
-  return db.select().from(messagesTable).where(eq(messagesTable.userId, id));
-};
-
-export const getUserMessageById = (userId: string, id: number) => {
-  return db
-    .select()
-    .from(messagesTable)
-    .where(and(eq(messagesTable.userId, userId), eq(messagesTable.id, id)))
-    .limit(1);
-};
-
-export const getUserMessagesByFileId = (userId: string, fileId: number, limit = INFINITE_QUERY_LIMIT, cursor?: number) => {
-  return (
-    db
-      .select({ id: messagesTable.id, text: messagesTable.text, createdAt: messagesTable.createdAt, isUserMessage: messagesTable.isUserMessage })
-      .from(messagesTable)
-      .where(and(eq(messagesTable.userId, userId), eq(messagesTable.fileId, fileId), lte(messagesTable.id, cursor || 2147483647))) // sql<number>`max(${messagesTable.id})`))) // TODO: Find a better way
-      .limit(limit + 1)
-      //.orderBy(asc(messagesTable.createdAt));
-      .orderBy(desc(messagesTable.createdAt))
-  );
-};
-
-export const insertMessage = async (message: NewMessage): Promise<Message[]> => {
-  // TODO: add userId to this
-  return db.insert(messagesTable).values(message).returning();
-};
-
-export const updateMessage = async (id: number, message: NewMessage): Promise<Message[]> => {
-  // TODO: add userId to this and grab the message from DB
-  delete message.createdAt;
-  delete message.id;
-  message.updatedAt = new Date();
-  return db.update(messagesTable).set(message).where(eq(messagesTable.id, id)).returning();
-};
-
-export const deleteMessage = async (id: number): Promise<Message[]> => {
-  return db.delete(messagesTable).where(eq(messagesTable.id, id)).returning();
-};
+export type Message = typeof messages.$inferSelect;
+export type NewMessage = typeof messages.$inferInsert;

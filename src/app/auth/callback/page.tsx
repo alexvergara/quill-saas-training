@@ -22,7 +22,9 @@ const AuthCallbackPage = () => {
       if (error.data?.code === 'UNAUTHORIZED') {
         router.push('/api/auth/login');
       }
-    }
+    },
+    retry: 5,
+    retryDelay: 1000
 
     // TODO: Fix this (Retry creates infinite loop)
     //retry: true

@@ -4,6 +4,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { trpc } from '@/app/_trpc/client';
 import { INFINITE_QUERY_LIMIT } from '@/config';
+import { ExtendedMessage } from '@/types/message';
 
 export type StreamResponse = {
   message: string;
@@ -64,10 +65,14 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
 
         latestPage.messages = [
           {
-            id: 0, // Math.random(),
-            text: message,
+            id: 0,
+            public_id: null,
+            userId: 0,
+            fileId,
+            message,
+            fromUser: true,
             createdAt: new Date().toISOString(),
-            isUserMessage: true
+            updatedAt: null
           },
           ...latestPage.messages
         ];
@@ -121,16 +126,16 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
                   updatedMessages = [
                     {
                       id: -2,
-                      text: accumulatedResponse,
-                      createdAt: new Date().toISOString(),
-                      isUserMessage: false
+                      message: accumulatedResponse,
+                      fromUser: false,
+                      createdAt: new Date().toISOString()
                     },
                     ...page.messages
                   ];
                 } else {
                   updatedMessages = page.messages.map((message) => {
                     if (message.id === -2) {
-                      return { ...message, text: accumulatedResponse };
+                      return { ...message, message: accumulatedResponse };
                     }
                     return message;
                   });

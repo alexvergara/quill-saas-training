@@ -1,80 +1,44 @@
-import { pgTable, serial, text, timestamp, pgEnum, integer } from 'drizzle-orm/pg-core';
-import { eq, and, relations } from 'drizzle-orm';
-import { db } from '../client';
+import { pgTable, serial, text, timestamp, integer, decimal, uuid, boolean, pgEnum } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
-import { usersTable } from './users';
-import { messagesTable } from './messages';
+import { users, messages } from '../schema';
 
-export const UploadStatuses = ['PENDING', 'UPLOADED', 'PROCESSING', 'FAILED', 'VECTOR_FAIL', 'SUCCESS'] as const;
-export const uploadStatusEnum = pgEnum('upload_status', UploadStatuses);
+export const uploadStatusEnum = pgEnum('upload_status', ['PENDING', 'UPLOADED', 'PROCESSING', 'FAILED', 'VECTOR_FAIL', 'SUCCESS']);
 
-export const filesTable = pgTable('files', {
+export const files = pgTable('files', {
   id: serial('id').primaryKey(),
+  public_id: uuid('public_id').defaultRandom().unique(),
   name: text('name').notNull(), // .unique() creates conflicts
-  userId: text('user_id').references(() => usersTable.id),
-  uploadStatus: uploadStatusEnum('upload_status').default(UploadStatuses[0]),
-  retry: integer('retry').default(0).notNull(),
+
+  // TODO: Based on Provider
   url: text('url').notNull(), // .unique() creates conflicts
   key: text('key').notNull(), // .unique() creates conflicts
+
+  retry: integer('retry').default(0).notNull(),
+  userId: integer('user_id').notNull(), //.references(() => usersTable.id),
+  uploadStatus: uploadStatusEnum('upload_status').default(uploadStatusEnum.enumValues[0]),
+
+  size: decimal('size', { precision: 20, scale: 5 }).default('0.0'),
+  pages: integer('pages').default(0),
+  score: decimal('score', { precision: 5, scale: 2 }).default('0.0'),
+  attempts: integer('attempts').default(0),
+  isPublic: boolean('is_public').default(false),
+  isReadable: boolean('is_readable').default(false),
+  isProcessed: boolean('is_processed').default(false),
+  isBlacklisted: boolean('is_blacklisted').default(false),
+  metadata: text('metadata'),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at') //.defaultNow().notNull()
 });
 
-export const filesTableRelations = relations(filesTable, ({ one, many }) => ({
-  user: one(usersTable, {
-    fields: [filesTable.userId],
-    references: [usersTable.id]
+export const filesTableRelations = relations(files, ({ one, many }) => ({
+  user: one(users, {
+    fields: [files.userId],
+    references: [users.id]
   }),
-  messages: many(messagesTable)
+  messages: many(messages)
 }));
 
-export type File = typeof filesTable.$inferSelect;
-export type NewFile = typeof filesTable.$inferInsert;
-
-/*export const getAllFiles = async (): Promise<File[]> => {
-  return db.select().from(filesTable);
-};
-
-export const getFileById = (id: number) => {
-  return db.select().from(filesTable).where(eq(filesTable.id, id)).limit(1);
-};*/
-
-export const getUserFileByKey = (userId: string, key: string) => {
-  return db
-    .select()
-    .from(filesTable)
-    .where(and(eq(filesTable.userId, userId), eq(filesTable.key, key)))
-    .limit(1);
-};
-
-export const getUserFiles = (id: string) => {
-  return db.select().from(filesTable).where(eq(filesTable.userId, id));
-};
-
-export const getUserFileById = (userId: string, id: number) => {
-  return db
-    .select()
-    .from(filesTable)
-    .where(and(eq(filesTable.userId, userId), eq(filesTable.id, id)))
-    .limit(1);
-};
-
-export const insertFile = async (file: NewFile): Promise<File[]> => {
-  // TODO: add userId to this
-  return db.insert(filesTable).values(file).returning();
-};
-
-export const updateFile = async (id: number, file: NewFile): Promise<File[]> => {
-  // TODO: add userId to this and grab the file from DB
-  delete file.createdAt;
-  delete file.id;
-  file.updatedAt = new Date();
-  return db.update(filesTable).set(file).where(eq(filesTable.id, id)).returning();
-};
-
-export const deleteFile = async (id: number): Promise<File[]> => {
-  await db.delete(messagesTable).where(eq(messagesTable.fileId, id)); // TODO: Cascade ?
-
-  return db.delete(filesTable).where(eq(filesTable.id, id)).returning();
-};
+export type File = typeof files.$inferSelect;
+export type NewFile = typeof files.$inferInsert;

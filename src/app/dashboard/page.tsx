@@ -1,21 +1,18 @@
 //import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import type { User } from '@clerk/nextjs/api';
 import { currentUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
-import { users } from '@/server/db/schema';
+import { getUserByPublicId } from '@/server/db/utils';
+
 import Dashboard from '@/components/Dashboard';
 
 const DashboardPage = async () => {
   const authCallback = '/auth/callback?origin=dashboard';
   /*const { getUser } = getKindeServerSession();
   const user = getUser();*/
-  const user: User | null = await currentUser();
+  const clerkUser = await currentUser();
+  const user = await getUserByPublicId(clerkUser?.id || '');
 
-  if (!user || !user.id) redirect(authCallback);
-
-  const dbUser = await users.getUserById(user.id);
-
-  if (!dbUser.length) redirect(authCallback);
+  if (!clerkUser || user) redirect(authCallback);
 
   return (
     <div>
