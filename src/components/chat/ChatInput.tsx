@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { ChatContext } from './ChatContext';
 import { TextareaWithAutosize } from '@/components/ui-custom/textarea-with-autosize';
-import { Button } from '@/components/ui/button';
 import { SendIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+import { ChatContext } from './ChatContext';
 
 const ChatInput = ({ isDisabled }: { isDisabled?: boolean }) => {
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 interface ChatSkeletonProps {
@@ -8,7 +8,6 @@ interface ChatSkeletonProps {
   classNames?: string | object;
 }
 
-// const ChatSkeleton = ({ right, classNames }: { right: boolean; classNames?: string | object }) => {
 const ChatSkeleton = React.forwardRef<HTMLDivElement, ChatSkeletonProps>(({ right, classNames }, ref?) => {
   return (
     <div className={cn('flex items-end ', { 'justify-end': right })} ref={ref}>

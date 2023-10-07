@@ -31,12 +31,12 @@ const ChatStatus = ({ status }: { status: string }) => {
 
   return (
     /* Chat status */
-    <div className="relative min-h-full bg-zinc-50 flex divide-y divide-zinc-200 flex-col justify-between gap-2">
+    <div className="relative min-h-full bg-zinc-50 flex divide-y divide-zinc-200 flex-col justify-between gap-2 dark:bg-slate-900 dark:divide-slate-700">
       <div className="flex-1 flex justify-center items-center flex-col mb-28">
         <div className="flex flex-col items-center gap-2">
           {chatStatus.icon}
           <h3 className="font-semibold text-xl">{chatStatus.title}</h3>
-          <p className="text-zinc-500 text-sm" dangerouslySetInnerHTML={{ __html: chatStatus.message }}></p>
+          <p className="text-zinc-500 text-sm dark:text-slate-400" dangerouslySetInnerHTML={{ __html: chatStatus.message }}></p>
           {chatStatus.error && (
             <Link href="/dashboard" className={buttonVariants({ variant: 'secondary', className: 'mt-4' })}>
               <ChevronLeftIcon className="h-3 w-3 mr-1.5" /> Back

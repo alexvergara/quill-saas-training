@@ -49,8 +49,6 @@ export const ChatContextProvider = ({ fileId, filePublicId, children }: ChatCont
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
-      console.log(message);
-
       const response = await fetch(`/api/messages/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,7 +75,6 @@ export const ChatContextProvider = ({ fileId, filePublicId, children }: ChatCont
         let newPages = [...old.pages];
         let latestPage = newPages[0]!;
 
-        //latestPage.messages = [createDummyMessage(crypto.randomUUID(), message, true), ...latestPage.messages]; // TODO: Util function
         latestPage.messages = [createDummyMessage('user-message', message, true), ...latestPage.messages];
 
         newPages[0] = latestPage;
