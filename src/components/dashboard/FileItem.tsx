@@ -3,7 +3,7 @@ import type { File } from '@/server/db/schema';
 import React from 'react';
 
 import Link from 'next/link';
-import { CheckIcon, FileTextIcon, Loader2Icon, PlusIcon, TrashIcon, XCircleIcon } from 'lucide-react';
+import { CheckCircleIcon, CheckIcon, CircleIcon, FileTextIcon, Loader2Icon, PlusIcon, TrashIcon, XCircleIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import format from 'date-fns/format';
@@ -13,6 +13,10 @@ const FileItem = ({ mode, index, className, file, deleteUserFile, currentlyDelet
   const handleDeleteFile = () => {
     if (deleteUserFile && file) deleteUserFile(file);
   };
+
+  // TODO: Create small components for each mode
+
+  // TODO: Paginate ?
 
   if (!file) {
     if (mode === 'list') {
@@ -41,6 +45,8 @@ const FileItem = ({ mode, index, className, file, deleteUserFile, currentlyDelet
     );
   }
 
+  const fileSize = (parseFloat('0' + file.size) / (1024 * 1024)).toFixed(2) + ' MB';
+
   if (mode === 'list') {
     return (
       <>
@@ -49,8 +55,8 @@ const FileItem = ({ mode, index, className, file, deleteUserFile, currentlyDelet
             <th className="text-sm">File</th>
             {/* <th className="text-center text-sm">Retry</th> */}
             {/* <th className="text-center text-sm">Status</th> */}
-            <th className="text-center text-sm">Size</th>
-            <th className="text-center text-sm">Pages</th>
+            <th className="text-right text-sm">Size</th>
+            <th className="text-right text-sm">Pages</th>
             <th className="text-center text-sm">Score</th>
             <th className="text-center text-sm">Readable</th>
             {/* <th className="text-center text-sm">Blacklisted</th> */}
@@ -68,13 +74,13 @@ const FileItem = ({ mode, index, className, file, deleteUserFile, currentlyDelet
           </td>
           {/* <td className="w-24 text-center text-xs">{file.retry}</td> */}
           {/* <td className="w-24 text-center text-xs">{file.uploadStatus}</td> */}
-          <td className="w-24 text-center text-xs">{parseFloat('0' + file.size) / (1024 * 1024)} MB</td>
-          <td className="w-24 text-center text-xs">{file.pages}</td>
+          <td className="w-24 text-right text-xs">{fileSize}</td>
+          <td className="w-24 text-right text-xs">{file.pages}</td>
           <td className="w-24 text-center text-xs">{file.score}</td>
-          <td className="w-24">{file.isReadable ? <XCircleIcon className="m-auto h-4 -w-4" /> : <CheckIcon className="m-auto h-4 w-4" />}</td>
-          {/* <td className="w-24">{file.isBlacklisted ? <XCircleIcon className="m-auto h-4 -w-4" /> : <CheckIcon className="m-auto h-4 w-4" />}</td> */}
-          <td className="w-24">{file.isProcessed ? <XCircleIcon className="m-auto h-4 -w-4" /> : <CheckIcon className="m-auto h-4 w-4" />}</td>
-          {/* <td className="w-24">{file.isPublic ? <XCircleIcon className="m-auto h-4 -w-4" /> : <CheckIcon className="m-auto h-4 w-4" />}</td> */}
+          <td className="w-24">{file.isReadable ? <CheckCircleIcon className="m-auto h-4 w-4" /> : <CircleIcon className="m-auto h-4 -w-4 text-gray-200 dark:text-slate-700" />}</td>
+          {/* <td className="w-24">{file.isBlacklisted ? <CheckCircleIcon className="m-auto h-4 w-4" /> : <CircleIcon className="m-auto h-4 -w-4 text-gray-200 dark:text-slate-700" />}</td> */}
+          <td className="w-24">{file.isProcessed ? <CheckCircleIcon className="m-auto h-4 w-4" /> : <CircleIcon className="m-auto h-4 -w-4 text-gray-200 dark:text-slate-700" />}</td>
+          {/* <td className="w-24">{file.isPublic ? <CheckCircleIcon className="m-auto h-4 w-4" /> : <CircleIcon className="m-auto h-4 -w-4 text-gray-200 dark:text-slate-700" />}</td> */}
           <td className="text-center w-8 px-1">{currentlyDeletingFile === file.id ? <Loader2Icon className="m-auto w-4 h-4 animate-spin" onClick={handleDeleteFile} /> : <TrashIcon className="m-auto text-red-500 h-4 w-4 cursor-pointer" onClick={handleDeleteFile} />}</td>
         </tr>
       </>
