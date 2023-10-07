@@ -12,7 +12,9 @@ const DashboardPage = async () => {
   const clerkUser = await currentUser();
   const user = await getUserByPublicId(clerkUser?.id || '');
 
-  if (!clerkUser || user) redirect(authCallback);
+  console.log('DashboardPage User', user, clerkUser);
+
+  if (!clerkUser || !user) redirect(authCallback);
 
   return (
     <div>

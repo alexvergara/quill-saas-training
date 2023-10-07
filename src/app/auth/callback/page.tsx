@@ -13,18 +13,18 @@ const AuthCallbackPage = () => {
   trpc.authCallback.useQuery(undefined, {
     onSuccess({ success }) {
       if (success) {
-        //console.log('User is sync to database');
+        console.log('User is sync to database');
         router.push(origin ? `/${origin}` : '/dashboard');
       }
     },
     onError(error) {
       console.error(error);
-      if (error.data?.code === 'UNAUTHORIZED') {
+      /*if (error.data?.code === 'UNAUTHORIZED') {
         router.push('/api/auth/login');
-      }
-    },
-    retry: 5,
-    retryDelay: 1000
+      }*/
+    }
+    /*retry: 5,
+    retryDelay: 1000*/
 
     // TODO: Fix this (Retry creates infinite loop)
     //retry: true

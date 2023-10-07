@@ -3,9 +3,10 @@ import { AppRouter } from '@/server/trpc';
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type Messages = RouterOutput['getUserMessagesByFileId']['messages'];
-type OmitMessage = Omit<Messages[number], 'message'>;
+//type OmitFields = Omit<Messages[number], 'message'>;
+type OmitFields = Omit<Messages[number], 'createdAt'>;
 type OverrideMessage = {
-  message: string | React.JSX.Element;
+  createdAt: string;
 };
 
-export type ExtendedMessage = OmitMessage & OverrideMessage;
+export type ExtendedMessage = OmitFields & OverrideMessage;

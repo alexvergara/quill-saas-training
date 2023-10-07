@@ -7,7 +7,7 @@ import { PineconeClient } from '@pinecone-database/pinecone';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions.mjs';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 import { getOpenAIInstance, prompts } from './openai';
-import { messages } from '@/server/db/schema';
+import { getUserMessagesByFileId, insertMessage } from '@/server/db/utils';
 
 let pineconeInstance: { pineconeIndex: any; embeddings: any } | null = null;
 export const getPineconeInstance = async () => {
@@ -36,7 +36,7 @@ export const getPineconeClient = async () => {
 };
 
 // vectorize and index entire document
-export const vectorizePDF = async (url: string, fileId: number) => {
+export const vectorizePDF = async (url: string, filePublicId: string) => {
   const response = await fetch(url);
   const blob = await response.blob();
   const loader = new PDFLoader(blob);
@@ -45,19 +45,25 @@ export const vectorizePDF = async (url: string, fileId: number) => {
 
   const { pineconeIndex, embeddings } = await getPineconeInstance();
 
+  //
+  await pineconeIndex.delete({ deleteAll: true, namespace: '1' });
+  await pineconeIndex.delete({ deleteAll: true, namespace: '2' });
+  await pineconeIndex.delete({ deleteAll: true, namespace: '3' });
+  await pineconeIndex.delete({ deleteAll: true, namespace: '4' });
+
   //await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, id: fileId.toString() });
-  await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, namespace: fileId.toString() });
+  await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, namespace: filePublicId });
 
   return true;
 };
 
 // vectorize message, fire search and create stream
-export const getMessagesStream = async (userId: number, fileId: number, message: string) => {
+export const getMessagesStream = async (userId: number, fileId: number, filePublicId: string, message: string) => {
   const { pineconeIndex, embeddings } = await getPineconeInstance();
 
-  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex, namespace: fileId.toString() });
+  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex, namespace: filePublicId });
   const results = await vectorStore.similaritySearch(message, 4); // TODO: Config ?
-  const prevMessages = await messages.getUserMessagesByFileId(userId, fileId, 6); // TODO: Config ?
+  const prevMessages = await getUserMessagesByFileId(userId, fileId, 6); // TODO: Config ?
 
   const formattedMessages = prevMessages.map((message) => ({
     role: message.fromUser ? ('User' as const) : ('Assistant' as const),
@@ -80,7 +86,7 @@ export const getMessagesStream = async (userId: number, fileId: number, message:
 
   const stream = OpenAIStream(response, {
     async onCompletion(completion) {
-      await messages.insertMessage({
+      await insertMessage({
         userId,
         fileId,
         message: completion

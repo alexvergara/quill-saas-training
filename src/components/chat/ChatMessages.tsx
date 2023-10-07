@@ -2,12 +2,11 @@ import type { ExtendedMessage } from '@/types/message';
 
 import React from 'react';
 
-import { Loader2Icon, MessageSquareIcon } from 'lucide-react';
+import { useInView } from 'react-intersection-observer';
+import { MessageSquareIcon } from 'lucide-react';
 import { trpc } from '@/app/_trpc/client';
 
-import { useInView } from 'react-intersection-observer';
-
-import { ChatContext } from './ChatContext';
+import { ChatContext, createDummyMessage } from './ChatContext';
 import ChatMessage from './ChatMessage';
 import ChatSkeleton from './ChatSkeleton';
 
@@ -19,16 +18,7 @@ const ChatMessages = ({ fileId }: { fileId: number }) => {
 
   const { isSuccess, data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = trpc.getUserMessagesByFileId.useInfiniteQuery({ fileId, limit: INFINITE_QUERY_LIMIT }, { getNextPageParam: (lastPage) => lastPage?.nextCursor, keepPreviousData: true });
 
-  const loadingMessage = {
-    id: -1,
-    message: (
-      <span className="flex items-center justify-center h-full">
-        <Loader2Icon className="w-4 h-4 animate-spin" />
-      </span>
-    ),
-    fromUser: false,
-    createdAt: new Date().toISOString()
-  };
+  const loadingMessage = createDummyMessage('is-loading', '', false);
 
   const combinedMessages = [...(isAIThinking ? [loadingMessage] : []), ...((isSuccess && data?.pages.map((page) => page.messages).flat()) || [])];
 

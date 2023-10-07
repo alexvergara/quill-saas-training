@@ -41,8 +41,8 @@ export const ourFileRouter = {
       // TODO: Move to a function on files ??? // TODO: Remove from here, is running twice
       let uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'FAILED');
       try {
-        console.log('vectorizing', file.url, newFile[0].id);
-        if (await vectorizePDF(file.url, newFile[0].id)) {
+        console.log('vectorizing', file.url, newFile[0].publicId);
+        if (await vectorizePDF(file.url, newFile[0].publicId)) {
           console.log('vectorized');
           uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'SUCCESS');
         }

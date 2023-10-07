@@ -4,9 +4,9 @@ import { relations } from 'drizzle-orm';
 import { files, messages, subscriptions, type Subscription } from '../schema';
 
 export const users = pgTable('users', {
-  // TODO: Add serial as id an back to external_id as public_id ??? (like id and nanoId approach)
+  // TODO: Add serial as id an back to external_id as publicId ??? (like id and nanoId approach)
   id: serial('id').primaryKey(),
-  public_id: text('public_id').unique().notNull(),
+  publicId: text('public_id').unique().notNull(),
   email: text('email').notNull(), // .unique() creates conflicts
 
   /*

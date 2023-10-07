@@ -5,7 +5,7 @@ import { users } from '../schema';
 
 export const subscriptions = pgTable('subscriptions', {
   id: serial('id').primaryKey(),
-  public_id: uuid('public_id').defaultRandom().unique(),
+  publicId: uuid('public_id').defaultRandom().unique().notNull(),
   userId: integer('user_id').notNull(), //.references(() => users.id),
   active: boolean('active').default(true),
 

@@ -56,7 +56,7 @@ const Navbar = async () => {
 
                 <UserAccountNav user={user} />
 
-                <UserButton afterSignOutUrl="/" />
+                {/* <UserButton afterSignOutUrl="/" /> */}
               </>
             )}
           </div>

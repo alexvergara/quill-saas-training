@@ -38,7 +38,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
     //     }
     //   }}
     >
-      <html lang="en" className="dark1">
+      <html lang="en" className="dark">
         <Providers>
           <body className={cn('min-h-screen font-sans antialiased light:grainy ', inter.className)}>
             <Toaster />

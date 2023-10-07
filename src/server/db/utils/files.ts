@@ -15,8 +15,8 @@ export const getUserFileByKey = (userId: number, key: string, options = {}) => {
   return db.query.files.findFirst({ where: (files, { and, eq }) => and(eq(files.userId, userId), eq(files.key, key)), ...options });
 };
 
-export const getUserFileByPublicId = (userId: number, public_id: string, options = {}) => {
-  return db.query.files.findFirst({ where: (files, { and, eq }) => and(eq(files.userId, userId), eq(files.public_id, public_id)), ...options });
+export const getUserFileByPublicId = (userId: number, publicId: string, options = {}) => {
+  return db.query.files.findFirst({ where: (files, { and, eq }) => and(eq(files.userId, userId), eq(files.publicId, publicId)), ...options });
 };
 
 // TODO: add userId to this

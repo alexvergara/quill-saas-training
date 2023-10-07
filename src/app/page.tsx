@@ -1,22 +1,18 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import { ArrowRightIcon } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
-import Image from 'next/image';
-import { getUserByPublicId } from '@/server/db/utils';
+import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 
 const HomePage = async () => {
-  const user = await getUserByPublicId('cku1q2q6d0000g1t6q1q2q6d0');
-
-  console.log('cku1q2q6d0000g1t6q1q2q6d0', user);
-
   return (
     <>
       <MaxWidthWrapper className="flex flex-col items-center justify-center mb-12 mt-28 sm:mt-40 text-center">
         <div className="flex items-center justify-center space-x-2 px-7 py-2 mx-auto mb-4 max-w-fit rounded-full border shadow-md backdrop-blur overflow-hidden transition-all bg-white border-gray-200 hover:bg-white/50 hover:border-gray-300 dark:bg-black dark:border-gray-700 dark:hover:bg-black/50 dark:hover:border-gray-600 ">
           <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Quill is now public!</p>
         </div>
-        <h1 className="max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl">
+        {/* <h1 className="max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl"> */}
+        <h1 className="max-w-3xl text-5xl font-bold md:max-w-5xl md:text-6xl 2xl:text-7xl">
           Chat with your <span className="text-blue-500 dark:text-blue-400">documents</span> in seconds.
         </h1>
         <p className="mt-5 max-w-prose sm:text-lg text-zinc-700 dark:text-slate-200">Quill allows you to have conversations with any PDF document. Simply upload your file and start asking questions right away.</p>

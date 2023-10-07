@@ -7,7 +7,7 @@ export const uploadStatusEnum = pgEnum('upload_status', ['PENDING', 'UPLOADED', 
 
 export const files = pgTable('files', {
   id: serial('id').primaryKey(),
-  public_id: uuid('public_id').defaultRandom().unique(),
+  publicId: uuid('public_id').defaultRandom().unique().notNull(),
   name: text('name').notNull(), // .unique() creates conflicts
 
   // TODO: Based on Provider

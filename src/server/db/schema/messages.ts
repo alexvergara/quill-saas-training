@@ -5,7 +5,7 @@ import { users, files } from '../schema';
 
 export const messages = pgTable('messages', {
   id: serial('id').primaryKey(), // TODO: make this a UUID
-  public_id: uuid('public_id').defaultRandom().unique(),
+  publicId: uuid('public_id').defaultRandom().unique().notNull(),
   message: text('message').notNull(), // .unique() creates conflicts
   fromUser: boolean('from_user').default(false),
 

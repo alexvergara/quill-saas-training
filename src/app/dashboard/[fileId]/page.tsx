@@ -19,7 +19,7 @@ const SingleFilePage = ({ params }: PageProps) => {
 
   if (!fileId) return notFound();
 
-  const { data: file, isLoading } = trpc.getUserFileByPublicId.useQuery({ public_id: fileId }); // TODO: Fix this (Force int)
+  const { data: file, isLoading } = trpc.getUserFileByPublicId.useQuery({ publicId: fileId }); // TODO: Fix this (Force int)
 
   if (!isLoading && !file) return notFound();
 

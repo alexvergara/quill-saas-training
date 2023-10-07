@@ -4,6 +4,7 @@ import React from 'react';
 
 import ReactMarkdown from 'react-markdown';
 import { Icons } from '@/components/ui-custom/Icons';
+import { Loader2Icon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -24,14 +25,19 @@ const ChatMessage = React.forwardRef<HTMLDivElement, MessageProps>(({ message, s
       </div>
       <div className={cn('flex flex-col max-w-md mx-2 space-y-2 text-base', fromUser ? 'order-1 items-end' : 'order-2 items-start')}>
         <div className={cn('inline-block px-4 py-2 rounded-lg', fromUser ? 'bg-blue-600 text-white dark:bg-gray-400 dark:text-black' : 'bg-gray-200 text-gray-900 dark:bg-slate-500 dark:text-slate-50', { 'rounded-br-none': !same && fromUser, 'rounded-bl-none': !same && !fromUser })}>
-          {typeof message.message === 'string' ? <ReactMarkdown className={cn('prose text-gray-900 dark:text-slate-50', { 'text-zinc-50 dark:text-black': fromUser })}>{message.message}</ReactMarkdown> : message.message}
-
-          {message.id >= 0 ? (
-            <div className={cn('mt-2 select-none text-xs text-right text-gray-500 dark:text-slate-400', { 'text-blue-300 dark:text-gray-600': fromUser })}>
-              {/*  */}
-              {format(new Date(message.createdAt), 'HH:mm')}
-            </div>
-          ) : null}
+          {message.publicId == 'is-loading' ? (
+            <span className="flex items-center justify-center h-full">
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+            </span>
+          ) : (
+            <>
+              <ReactMarkdown className={cn('prose text-gray-900 dark:text-slate-50', { 'text-zinc-50 dark:text-black': fromUser })}>{message.message}</ReactMarkdown>
+              <div className={cn('mt-2 select-none text-xs text-right text-gray-500 dark:text-slate-400', { 'text-blue-300 dark:text-gray-600': fromUser })}>
+                {/*  */}
+                {format(new Date(message.createdAt!), 'HH:mm')}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

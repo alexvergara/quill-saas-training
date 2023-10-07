@@ -55,7 +55,7 @@ const Dashboard = () => {
         <ul className="mt-8 grid grid-cols-1 gap-6 divide-y divide-zinc-2 md:grid-cols-2 lg:grid-cols-3">
           {userFiles.map((file) => (
             <li className="col-span-1 divide-y rounded-lg shadow transition hover:shadow-lg bg-white divide-gray-200 dark:bg-gray-800 dark:divide-gray-700" key={file.id}>
-              <Link href={`/dashboard/${file.public_id}`} className="flex flex-col gap-2">
+              <Link href={`/dashboard/${file.publicId}`} className="flex flex-col gap-2">
                 <div className="pt-6 px-6 flex w-full items-center justify-between space-x-6">
                   <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 dark:from-cyan-400 dark:to-blue-400" />
                   <div className="flex-1 truncate">

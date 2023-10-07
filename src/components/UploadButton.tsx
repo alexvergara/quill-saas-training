@@ -34,7 +34,7 @@ const UploadDropzone = () => {
   });
 
   const { mutate: startPolling } = trpc.getUserFileByKey.useMutation({
-    onSuccess: (file) => router.push(`/dashboard/${file.public_id}`),
+    onSuccess: (file) => router.push(`/dashboard/${file.publicId}`),
     retry: 5,
     retryDelay: 1000
 

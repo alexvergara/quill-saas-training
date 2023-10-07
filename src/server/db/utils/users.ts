@@ -7,7 +7,7 @@ export const getUserById = (userId: number, options = {}) => {
 };
 
 export const getUserByPublicId = (publicId: string, options = {}) => {
-  return db.query.users.findFirst({ where: (users, { eq }) => eq(users.public_id, publicId), ...options });
+  return db.query.users.findFirst({ where: (users, { eq }) => eq(users.publicId, publicId), ...options });
 };
 
 export const insertUser = async (user: NewUser): Promise<User[]> => {
@@ -17,8 +17,8 @@ export const insertUser = async (user: NewUser): Promise<User[]> => {
 };
 
 // TODO:
-export const updateUser = async (public_id: string, user: NewUser): Promise<User[]> => {
+export const updateUser = async (publicId: string, user: NewUser): Promise<User[]> => {
   delete user.createdAt;
   user.updatedAt = new Date();
-  return db.update(users).set(user).where(eq(users.public_id, public_id)).returning();
+  return db.update(users).set(user).where(eq(users.publicId, publicId)).returning();
 };

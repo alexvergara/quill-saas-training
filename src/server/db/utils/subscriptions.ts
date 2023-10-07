@@ -17,7 +17,7 @@ export const updateSubscriptionBySubscriptionId = async (subscriptionId: string,
 };
 
 export const upsertUserSubscription = async (publicId: string, subscription: NewSubscription) => {
-  const user = await db.query.users.findFirst({ where: (users, { eq }) => eq(users.public_id, publicId) });
+  const user = await db.query.users.findFirst({ where: (users, { eq }) => eq(users.publicId, publicId) });
 
   if (!user) throw new Error('User not found');
 

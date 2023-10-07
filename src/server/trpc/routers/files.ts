@@ -19,10 +19,10 @@ export const filesRouter = {
     return await getUserFileById(userId, input.id);
   }),
 
-  getUserFileByPublicId: privateProcedure.input(z.object({ public_id: z.string() })).query(async ({ ctx, input }) => {
+  getUserFileByPublicId: privateProcedure.input(z.object({ publicId: z.string() })).query(async ({ ctx, input }) => {
     const { userId } = ctx;
 
-    return await getUserFileByPublicId(userId, input.public_id);
+    return await getUserFileByPublicId(userId, input.publicId);
   }),
 
   getUserFileUploadStatus: privateProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
@@ -40,7 +40,7 @@ export const filesRouter = {
         file.retry = file.retry + 1;
         try {
           //console.log('vectorizing', file.url, file.id);
-          if (await vectorizePDF(file.url, file.id)) {
+          if (await vectorizePDF(file.url, file.publicId)) {
             console.log('vectorized');
             file.uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'SUCCESS') || 'SUCCESS';
           }

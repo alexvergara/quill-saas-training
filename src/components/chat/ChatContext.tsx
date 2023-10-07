@@ -1,10 +1,12 @@
+import type { ExtendedMessage } from '@/types/message';
+
 import React from 'react';
 
 import { useToast } from '@/components/ui/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { trpc } from '@/app/_trpc/client';
+
 import { INFINITE_QUERY_LIMIT } from '@/config';
-import { ExtendedMessage } from '@/types/message';
 
 export type StreamResponse = {
   message: string;
@@ -23,6 +25,17 @@ export const ChatContext = React.createContext<StreamResponse>({
   isLoading: false,
   addMessage: () => {},
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {}
+});
+
+export const createDummyMessage = (publicId: string, message: string, fromUser: boolean): ExtendedMessage => ({
+  id: 0,
+  publicId,
+  userId: 0,
+  fileId: 0,
+  message,
+  fromUser,
+  createdAt: new Date().toISOString(),
+  updatedAt: null
 });
 
 export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
@@ -63,19 +76,7 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
         let newPages = [...old.pages];
         let latestPage = newPages[0]!;
 
-        latestPage.messages = [
-          {
-            id: 0,
-            public_id: null,
-            userId: 0,
-            fileId,
-            message,
-            fromUser: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: null
-          },
-          ...latestPage.messages
-        ];
+        latestPage.messages = [createDummyMessage(crypto.randomUUID(), message, true), ...latestPage.messages];
 
         newPages[0] = latestPage;
 
@@ -123,15 +124,7 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
                 let updatedMessages;
 
                 if (!isAIResponseCreated) {
-                  updatedMessages = [
-                    {
-                      id: -2,
-                      message: accumulatedResponse,
-                      fromUser: false,
-                      createdAt: new Date().toISOString()
-                    },
-                    ...page.messages
-                  ];
+                  updatedMessages = [createDummyMessage('ai-response', accumulatedResponse, false), ...page.messages];
                 } else {
                   updatedMessages = page.messages.map((message) => {
                     if (message.id === -2) {
