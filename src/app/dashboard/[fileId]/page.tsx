@@ -36,7 +36,7 @@ const SingleFilePage = ({ params }: PageProps) => {
 
         {/* Chat */}
         <div className="shrink-8 flex-[0.75] border-t border-gray-200 dark:border-slate-500 lg:w-96 lg:border-l lg:border-t-0">
-          <ChatWrapper fileId={file?.id || 0} />
+          <ChatWrapper fileId={file?.id || 0} filePublicId={file?.publicId || ''} />
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 //import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { getAuth } from '@clerk/nextjs/server';
-import { SendMessageValidator } from '@/lib/validators/SendMessageValidator';
 import { NextRequest } from 'next/server';
 import { getMessagesStream } from '@/lib/pinecone';
+import { SendMessageValidator } from '@/lib/validators/SendMessageValidator';
 import { getUserByPublicId, getUserFileById, insertMessage } from '@/server/db/utils';
 
 export const POST = async (req: NextRequest) => {
@@ -19,7 +19,7 @@ export const POST = async (req: NextRequest) => {
   //console.log('body', req, body);
 
   // TODO: is this necessary ???
-  const { fileId, message } = SendMessageValidator.parse(body);
+  const { fileId, filePublicId, message } = SendMessageValidator.parse(body);
   const file = await getUserFileById(user.id, fileId);
   if (!file) return new Response('Not found', { status: 404 });
 
@@ -30,5 +30,5 @@ export const POST = async (req: NextRequest) => {
     fromUser: true
   });
 
-  return getMessagesStream(user.id, fileId, message);
+  return getMessagesStream(user.id, fileId, filePublicId, message);
 };

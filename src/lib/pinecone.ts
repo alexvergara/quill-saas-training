@@ -7,7 +7,9 @@ import { PineconeClient } from '@pinecone-database/pinecone';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions.mjs';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 import { getOpenAIInstance, prompts } from './openai';
-import { getUserMessagesByFileId, insertMessage } from '@/server/db/utils';
+import { getUserLatestMessagesByFileId, insertMessage } from '@/server/db/utils';
+
+import { AI_PREVIOUS_MESSAGES, AI_SIMILARITY_SEARCH_COUNT } from '@/config';
 
 let pineconeInstance: { pineconeIndex: any; embeddings: any } | null = null;
 export const getPineconeInstance = async () => {
@@ -45,14 +47,11 @@ export const vectorizePDF = async (url: string, filePublicId: string) => {
 
   const { pineconeIndex, embeddings } = await getPineconeInstance();
 
-  //
-  await pineconeIndex.delete({ deleteAll: true, namespace: '1' });
-  await pineconeIndex.delete({ deleteAll: true, namespace: '2' });
-  await pineconeIndex.delete({ deleteAll: true, namespace: '3' });
-  await pineconeIndex.delete({ deleteAll: true, namespace: '4' });
-
   //await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, id: fileId.toString() });
   await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, namespace: filePublicId });
+
+  // TODO: Create a function to remove all documents from an index... and specific when user deletes de file
+  //await pineconeIndex.delete1({ deleteAll: true, namespace: '1' });
 
   return true;
 };
@@ -62,8 +61,8 @@ export const getMessagesStream = async (userId: number, fileId: number, filePubl
   const { pineconeIndex, embeddings } = await getPineconeInstance();
 
   const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex, namespace: filePublicId });
-  const results = await vectorStore.similaritySearch(message, 4); // TODO: Config ?
-  const prevMessages = await getUserMessagesByFileId(userId, fileId, 6); // TODO: Config ?
+  const results = await vectorStore.similaritySearch(message, AI_SIMILARITY_SEARCH_COUNT);
+  const prevMessages = await getUserLatestMessagesByFileId(userId, fileId, AI_PREVIOUS_MESSAGES);
 
   const formattedMessages = prevMessages.map((message) => ({
     role: message.fromUser ? ('User' as const) : ('Assistant' as const),

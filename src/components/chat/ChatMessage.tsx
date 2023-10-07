@@ -38,6 +38,7 @@ const ChatMessage = React.forwardRef<HTMLDivElement, MessageProps>(({ message, s
               </div>
             </>
           )}
+          <p className="text-xs">{message.publicId}</p>
         </div>
       </div>
     </div>

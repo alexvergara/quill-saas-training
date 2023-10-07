@@ -17,6 +17,7 @@ export type StreamResponse = {
 
 export interface ChatContextProps {
   fileId: number;
+  filePublicId: string;
   children: React.ReactNode;
 }
 
@@ -38,7 +39,7 @@ export const createDummyMessage = (publicId: string, message: string, fromUser: 
   updatedAt: null
 });
 
-export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
+export const ChatContextProvider = ({ fileId, filePublicId, children }: ChatContextProps) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [message, setMessage] = React.useState<string>('');
   const { toast } = useToast();
@@ -53,7 +54,7 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
       const response = await fetch(`/api/messages/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileId, message })
+        body: JSON.stringify({ fileId, filePublicId, message })
       });
 
       if (!response.ok) {
@@ -66,17 +67,18 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
       backupMessage.current = message;
       setMessage('');
 
-      await utils.getUserMessagesByFileId.cancel();
+      await utils.getUserLatestMessagesByFileId.cancel();
 
-      const previousMessages = utils.getUserMessagesByFileId.getInfiniteData();
+      const previousMessages = utils.getUserLatestMessagesByFileId.getInfiniteData();
 
-      utils.getUserMessagesByFileId.setInfiniteData({ fileId, limit: INFINITE_QUERY_LIMIT }, (old) => {
+      utils.getUserLatestMessagesByFileId.setInfiniteData({ fileId, limit: INFINITE_QUERY_LIMIT }, (old) => {
         if (!old) return { pages: [], pageParams: [] };
 
         let newPages = [...old.pages];
         let latestPage = newPages[0]!;
 
-        latestPage.messages = [createDummyMessage(crypto.randomUUID(), message, true), ...latestPage.messages];
+        //latestPage.messages = [createDummyMessage(crypto.randomUUID(), message, true), ...latestPage.messages]; // TODO: Util function
+        latestPage.messages = [createDummyMessage('user-message', message, true), ...latestPage.messages];
 
         newPages[0] = latestPage;
 
@@ -89,7 +91,7 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
     },
     onError: (_, __, context) => {
       setMessage(backupMessage.current);
-      utils.getUserMessagesByFileId.setData({ fileId }, { messages: context?.previousMessages || [] });
+      utils.getUserLatestMessagesByFileId.setData({ fileId }, { messages: context?.previousMessages || [] });
       //toast.error('Failed to send message');
     },
     onSuccess: async (stream) => {
@@ -114,10 +116,10 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
           const chunk = decoder.decode(value, { stream: true });
           accumulatedResponse += chunk;
 
-          utils.getUserMessagesByFileId.setInfiniteData({ fileId, limit: INFINITE_QUERY_LIMIT }, (old) => {
+          utils.getUserLatestMessagesByFileId.setInfiniteData({ fileId, limit: INFINITE_QUERY_LIMIT }, (old) => {
             if (!old) return { pages: [], pageParams: [] };
 
-            let isAIResponseCreated = old.pages.some((page) => page.messages.some((message) => message.id === -2)); //'ai-message' ));
+            let isAIResponseCreated = old.pages.some((page) => page.messages.some((message) => message.publicId === 'ai-response'));
 
             let updatePages = old.pages.map((page) => {
               if (page === old.pages[0]) {
@@ -127,9 +129,7 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
                   updatedMessages = [createDummyMessage('ai-response', accumulatedResponse, false), ...page.messages];
                 } else {
                   updatedMessages = page.messages.map((message) => {
-                    if (message.id === -2) {
-                      return { ...message, message: accumulatedResponse };
-                    }
+                    if (message.publicId === 'ai-response') return { ...message, message: accumulatedResponse };
                     return message;
                   });
                 }
@@ -147,7 +147,7 @@ export const ChatContextProvider = ({ fileId, children }: ChatContextProps) => {
     },
     onSettled: async () => {
       setIsLoading(false);
-      await utils.getUserMessagesByFileId.invalidate();
+      await utils.getUserLatestMessagesByFileId.invalidate();
     }
   });
 

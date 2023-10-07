@@ -2,7 +2,7 @@ import { privateProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { deleteMessage, getUserMessageById, getUserMessages, getUserMessagesByFileId } from '@/server/db/utils';
+import { deleteMessage, getUserMessageById, getUserMessages, getUserLatestMessagesByFileId } from '@/server/db/utils';
 import { INFINITE_QUERY_LIMIT } from '@/config';
 import { Message } from '@/server/db/schema';
 
@@ -19,12 +19,13 @@ export const messagesRouter = {
     return await getUserMessageById(userId, input.id);
   }),
 
-  getUserMessagesByFileId: privateProcedure.input(z.object({ fileId: z.number(), limit: z.number().min(1).max(100).default(INFINITE_QUERY_LIMIT), cursor: z.number().optional() })).query(async ({ ctx, input }) => {
+  getUserLatestMessagesByFileId: privateProcedure.input(z.object({ fileId: z.number(), limit: z.number().min(1).max(100).default(INFINITE_QUERY_LIMIT), cursor: z.number().optional() })).query(async ({ ctx, input }) => {
     const { userId } = ctx;
     const { fileId, limit, cursor } = input;
 
-    const chatMessages = await getUserMessagesByFileId(userId, fileId, limit, cursor);
-    if (!chatMessages.length) throw new TRPCError({ code: 'NOT_FOUND' });
+    const chatMessages = await getUserLatestMessagesByFileId(userId, fileId, limit, cursor);
+
+    //if (!chatMessages.length) throw new TRPCError({ code: 'NOT_FOUND' }); // TODO: Not found only if file not found
 
     let nextCursor;
     if (chatMessages.length > limit) {

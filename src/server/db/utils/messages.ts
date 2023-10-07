@@ -12,7 +12,7 @@ export const getUserMessageById = (userId: number, messageId: number, options = 
   return db.query.messages.findFirst({ where: (messages, { and, eq }) => and(eq(messages.userId, userId), eq(messages.id, messageId)), ...options });
 };
 
-export const getUserMessagesByFileId = (userId: number, fileId: number, limit = INFINITE_QUERY_LIMIT, cursor?: number) => {
+export const getUserLatestMessagesByFileId = (userId: number, fileId: number, limit = INFINITE_QUERY_LIMIT, cursor?: number) => {
   //return db.execute(sql`select * from messages where user_id = ${userId} and file_id = ${fileId} ${cursor ? 'and id <= ' + cursor : ''} order by id desc limit ${limit + 1}`);
 
   return db.query.messages.findMany({
