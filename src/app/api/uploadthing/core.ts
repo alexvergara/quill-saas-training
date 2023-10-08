@@ -5,11 +5,12 @@ import { vectorizePDF } from '@/lib/pinecone';
 
 import { getUserByPublicId, insertFile, updateFile } from '@/server/db/utils';
 import { uploadStatusEnum } from '@/server/db/schema';
+import { MAX_FILE_SIZE } from '@/config/files';
 
 const f = createUploadthing();
 
 export const ourFileRouter = {
-  pdfUploader: f({ pdf: { maxFileSize: '4MB' } })
+  pdfUploader: f({ pdf: { maxFileSize: MAX_FILE_SIZE } }) // TODO: Config MAX_FILE_SIZE
     .middleware(async ({ req }) => {
       /*const { getUser } = getKindeServerSession();
       const user = await getUser();

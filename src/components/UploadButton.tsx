@@ -6,17 +6,25 @@ import { useUploadThing } from '@/lib/uploadthing';
 import { useRouter } from 'next/navigation';
 import { trpc } from '@app/_trpc/client';
 
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { CloudIcon, FileIcon, Loader2Icon } from 'lucide-react';
-import { ProgressWithColor } from '@/components/ui-custom/progress-with-color';
-import { toast } from '@/components/ui/use-toast';
 import Dropzone from 'react-dropzone';
+import { ProgressWithColor } from '@/components/ui-custom/progress-with-color';
+import { CloudIcon, FileIcon, Loader2Icon } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
+import { ToastProps } from '@/components/ui/toast';
+import { getFileMaxSize } from '@/lib/utils';
+import { MAX_FILE_SIZE } from '@/config/files';
 
 const UploadDropzone = () => {
   const router = useRouter();
   const [isUploading, setIsUploading] = React.useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = React.useState<number>(0);
+
+  //
+  const maxFileSize = MAX_FILE_SIZE; // TODO: Use user's subscription plan to get max file size
+  const maxFileSizeInBytes = getFileMaxSize(maxFileSize);
+  const toastError = { title: 'Something went wrong', description: 'Please try again later', variant: 'destructive' } as ToastProps;
 
   const { startUpload } = useUploadThing('pdfUploader', {
     onUploadBegin: (filename: string) => setIsUploading(true),
@@ -26,7 +34,8 @@ const UploadDropzone = () => {
       toast({ title: 'Something went wrong', description: error.message, variant: 'destructive' });
     },
     onClientUploadComplete: (response) => {
-      if (!response) return toast({ title: 'Something went wrong', description: 'Please try again later', variant: 'destructive' });
+      console.log('onClientUploadComplete', response, maxFileSizeInBytes);
+      if (!response || !response.length) return toast({ ...toastError });
       const [fileResponse] = response;
       //console.log(fileResponse);
       startPolling({ key: fileResponse?.key });
@@ -35,8 +44,8 @@ const UploadDropzone = () => {
 
   const { mutate: startPolling } = trpc.getUserFileByKey.useMutation({
     onSuccess: (file) => router.push(`/dashboard/${file.publicId}`),
-    retry: 5,
-    retryDelay: 1000
+    retry: true, //5, // TODO: Count and delay based on file size
+    retryDelay: 2000
 
     // TODO: The retry must not be infinite, but only for a certain amount of time
 
@@ -51,8 +60,16 @@ const UploadDropzone = () => {
   // TODO: Add function for cancelling upload (if possible)
   // TODO: Improve Dropzone options (accept list, max size, etc.)
 
+  const handleDropRejected = (filesRejected: any) => {
+    console.log(filesRejected);
+    if (filesRejected && filesRejected.length) {
+      return toast({ ...toastError, description: filesRejected[0].errors[0].message });
+    }
+    return toast(toastError);
+  };
+
   return (
-    <Dropzone multiple={false} accept={{ 'application/pdf': ['.pdf'] }} maxSize={4 * 1024 * 1024} minSize={512} onDrop={(acceptedFile) => startUpload(acceptedFile)}>
+    <Dropzone multiple={false} accept={{ 'application/pdf': ['.pdf'] }} maxSize={maxFileSizeInBytes} minSize={512} noClick={true} onDropRejected={(e) => handleDropRejected(e)} onDropAccepted={(acceptedFile) => startUpload(acceptedFile)}>
       {({ getRootProps, getInputProps, acceptedFiles, isDragActive }) => (
         <div {...getRootProps()} className="border h-64 border-dashed border-gray-300 rounded-lg dark:border-slate-600">
           <div className="flex items-center justify-center h-full w-full">
@@ -68,7 +85,7 @@ const UploadDropzone = () => {
                     </span>
                   )}
                 </p>
-                <p className="text-xs text-zinc-500 dark:text-gray-400">PDF (up to 4MB)</p>
+                <p className="text-xs text-zinc-500 dark:text-gray-400">PDF (up to {maxFileSize})</p>
               </div>
 
               {acceptedFiles && acceptedFiles[0] ? (
