@@ -5,9 +5,8 @@ import { z } from 'zod';
 import { vectorizePDF, removeDocumentFromIndex } from '@/lib/pinecone';
 import { deleteFile, getUserFileById, getUserFileByKey, getUserFileByPublicId, getUserFiles, updateFile } from '@/server/db/utils';
 import { uploadStatusEnum } from '@/server/db/schema';
-import { UTApi } from 'uploadthing/server';
-//import { utapi } from '@/lib/uploadthing-utapi';
-//import { utapi } from '@/lib/uploadthing-utapi';
+import { FixUTApi } from '@/lib/uploadthing-fix';
+//import { UTApi } from 'uploadthing/server';
 
 export const filesRouter = {
   getUserFiles: privateProcedure.query(async ({ ctx }) => {
@@ -78,18 +77,16 @@ export const filesRouter = {
     if (file.userId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED', message: `You can\'t remove this file ([user: ${userId}] files.deleteUserFile: ${id}).` });
 
     // Remove from Host // TODO: Mark as failed and prevent from remove from DB ? (Move to another owner while manually removed ?)
-    try {
-      const utapi = new UTApi(); // TODO: UPLOADTHING_SECRET is never found
-      const deletedFile = await utapi.deleteFiles([file.key]);
 
-      console.log('deletedFile', deletedFile);
-    } catch (error) {
-      console.log('Error removing from file storage provider', error);
-    }
+    //const utapi = new UTApi(); // TODO: UPLOADTHING_SECRET is never found
+    const utapi = new FixUTApi(); // TODO: Replace with the above when fixed or testing in Cloud
+    await utapi.deleteFiles([file.key]);
 
     // Remove from Vector Store // TODO: Mark as failed and prevent from remove from DB ? (Move to another owner while manually removed ?)
     await removeDocumentFromIndex(file.publicId);
 
     return await deleteFile(id);
+
+    return true;
   })
 };

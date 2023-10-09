@@ -23,11 +23,12 @@ export const getBaseUrl = () => {
 };
 
 export const getFileMaxSize = (maxFileSize?: string) => {
-  const maxFile = (maxFileSize || MAX_FILE_SIZE).toLowerCase().trim();
+  const maxFile = (maxFileSize || MAX_FILE_SIZE).toUpperCase().trim();
   const size = maxFile.replace(/[^0-9\.]+/g, '');
   const unit = maxFile.replace(size, '');
 
-  const units = ['b', 'kb', 'mb', 'gb', 'tb', 'pb', 'eb', 'zb', 'yb'];
+  const units = ['B', 'KB', 'MB', 'GB'];
 
-  return parseFloat(size) * (1000 ** units.indexOf(unit) + 1);
+  //return Math.floor(parseFloat(size) * (1024 ** units.indexOf(unit) + 1));
+  return Math.floor(parseFloat(size) * Math.pow(1024, units.indexOf(unit)));
 };
