@@ -12,8 +12,6 @@ const DashboardPage = async () => {
   const clerkUser = await currentUser();
   const user = await getUserByPublicId(clerkUser?.id || '');
 
-  console.log('DashboardPage User', user, clerkUser);
-
   if (!clerkUser || !user) redirect(authCallback);
 
   return (

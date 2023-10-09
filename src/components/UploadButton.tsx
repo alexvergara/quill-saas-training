@@ -15,6 +15,7 @@ import { toast } from '@/components/ui/use-toast';
 import { ToastProps } from '@/components/ui/toast';
 import { getFileMaxSize } from '@/lib/utils';
 import { MAX_FILE_SIZE } from '@/config/files';
+import { updateFile } from '@/server/db/utils';
 
 const UploadDropzone = () => {
   const router = useRouter();
@@ -34,18 +35,16 @@ const UploadDropzone = () => {
       toast({ title: 'Something went wrong', description: error.message, variant: 'destructive' });
     },
     onClientUploadComplete: (response) => {
-      console.log('onClientUploadComplete', response, maxFileSizeInBytes);
       if (!response || !response.length) return toast({ ...toastError });
       const [fileResponse] = response;
-      //console.log(fileResponse);
       startPolling({ key: fileResponse?.key });
     }
   });
 
   const { mutate: startPolling } = trpc.getUserFileByKey.useMutation({
     onSuccess: (file) => router.push(`/dashboard/${file.publicId}`),
-    retry: true, //5, // TODO: Count and delay based on file size
-    retryDelay: 2000
+    retry: 5, // TODO: Count and delay based on file size ?
+    retryDelay: 500
 
     // TODO: The retry must not be infinite, but only for a certain amount of time
 

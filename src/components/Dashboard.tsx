@@ -4,16 +4,15 @@ import type { File } from '@/server/db/schema';
 
 import React from 'react';
 
-import Link from 'next/link';
-import { FileTextIcon, GhostIcon, Grid2X2Icon, LayoutGridIcon, ListIcon, Loader2Icon, MessageSquareIcon, PlusIcon, SquareIcon, StretchHorizontalIcon, Table2Icon, TrashIcon } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { GhostIcon, LayoutGridIcon, ListIcon, StretchHorizontalIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
 import { trpc } from '@app/_trpc/client';
+import { cn } from '@/lib/utils';
 
 import UploadButton from './UploadButton';
-import { cn } from '@/lib/utils';
 import FileItem from './dashboard/FileItem';
+//import { deleteFiles } from '@/app/_actions';
+//import { utapi } from '@/lib/uploadthing-utapi';
 
 const Dashboard = () => {
   const [currentlyDeletingFile, setCurrentlyDeletingFile] = React.useState<number | null>(null);
@@ -27,8 +26,15 @@ const Dashboard = () => {
     onSuccess() {
       utils.getUserFiles.invalidate();
     },
-    onMutate({ id }) {
+    onMutate({ id, key }) {
       setCurrentlyDeletingFile(id); // TODO: Call uploadthing to delete file
+      /*deleteFiles([key])
+        .then((response) => {
+          console.log('Deleted from host', response);
+        })
+        .catch((error) => {
+          console.error('Error deleting from host', error);
+        });*/
     },
     onSettled() {
       setCurrentlyDeletingFile(null);

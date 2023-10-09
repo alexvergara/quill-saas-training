@@ -1,1 +1,1 @@
-export const MAX_FILE_SIZE = '32MB'; // multiples of 8 ?
+export const MAX_FILE_SIZE = '4MB'; // multiples of 8 ?

@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../client';
 
 import { files, messages, type File, type NewFile } from '../schema';
+//import { utapi } from '@/lib/uploadthing';
 
 export const getUserFiles = (userId: number, options = {}) => {
   return db.query.files.findMany({ where: (files, { eq }) => eq(files.userId, userId), ...options });

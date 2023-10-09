@@ -2,9 +2,12 @@ import { privateProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { vectorizePDF } from '@/lib/pinecone';
+import { vectorizePDF, removeDocumentFromIndex } from '@/lib/pinecone';
 import { deleteFile, getUserFileById, getUserFileByKey, getUserFileByPublicId, getUserFiles, updateFile } from '@/server/db/utils';
 import { uploadStatusEnum } from '@/server/db/schema';
+import { UTApi } from 'uploadthing/server';
+//import { utapi } from '@/lib/uploadthing-utapi';
+//import { utapi } from '@/lib/uploadthing-utapi';
 
 export const filesRouter = {
   getUserFiles: privateProcedure.query(async ({ ctx }) => {
@@ -39,8 +42,8 @@ export const filesRouter = {
       if (file.retry < 3) {
         file.retry = file.retry + 1;
         try {
-          //console.log('vectorizing', file.url, file.id);
-          if (await vectorizePDF(file.url, file.publicId)) {
+          console.log('retry vectorize', file.url, file.id);
+          if (await vectorizePDF(file.id, file.publicId, file.url)) {
             console.log('vectorized');
             file.uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'SUCCESS') || 'SUCCESS';
           }
@@ -73,6 +76,19 @@ export const filesRouter = {
     if (!file) throw new TRPCError({ code: 'NOT_FOUND' });
 
     if (file.userId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED', message: `You can\'t remove this file ([user: ${userId}] files.deleteUserFile: ${id}).` });
+
+    // Remove from Host // TODO: Mark as failed and prevent from remove from DB ? (Move to another owner while manually removed ?)
+    try {
+      const utapi = new UTApi(); // TODO: UPLOADTHING_SECRET is never found
+      const deletedFile = await utapi.deleteFiles([file.key]);
+
+      console.log('deletedFile', deletedFile);
+    } catch (error) {
+      console.log('Error removing from file storage provider', error);
+    }
+
+    // Remove from Vector Store // TODO: Mark as failed and prevent from remove from DB ? (Move to another owner while manually removed ?)
+    await removeDocumentFromIndex(file.publicId);
 
     return await deleteFile(id);
   })

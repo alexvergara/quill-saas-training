@@ -23,28 +23,19 @@ export const ourFileRouter = {
       return { publicId, userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      //const statues = files.UploadStatuses.reduce((acc, item) => { return { ...acc, [item]: item }, {} } as any);
-
-      console.log('metadata', metadata);
-
       const newFile = await insertFile({
-        // TODO: Use intermediate file status (PENDING, UPLOADED)
         key: file.key,
         //url: file.url,
         url: `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`,
+        size: '' + file.size / 1000, // TODO: Check why is not working with decimal
         name: file.name,
         userId: metadata.userId,
-        uploadStatus: 'PROCESSING'
+        uploadStatus: 'PROCESSING' // TODO: Use enum
       });
 
-      // TODO: send to queue for processing
-
-      // TODO: Move to a function on files ??? // TODO: Remove from here, is running twice
       let uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'FAILED');
       try {
-        console.log('vectorizing', file.url, newFile[0].publicId);
-        if (await vectorizePDF(file.url, newFile[0].publicId)) {
-          console.log('vectorized');
+        if (await vectorizePDF(newFile[0].id, newFile[0].publicId, file.url)) {
           uploadStatus = uploadStatusEnum.enumValues.find((item) => item === 'SUCCESS');
         }
       } catch (e) {
@@ -57,11 +48,5 @@ export const ourFileRouter = {
       //console.log('newFile', newFile);
     })
 } satisfies FileRouter;
-
-/*export const fileManager = {
-  deleteFiles: (files: string | string[]) => {
-    return utapi.deleteFiles(files);
-  }
-};*/
 
 export type OurFileRouter = typeof ourFileRouter;

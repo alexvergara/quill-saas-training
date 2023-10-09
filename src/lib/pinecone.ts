@@ -8,9 +8,10 @@ import { PineconeClient } from '@pinecone-database/pinecone';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions.mjs';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 import { getOpenAIInstance, prompts } from './openai';
-import { getUserLatestMessagesByFileId, insertMessage } from '@/server/db/utils';
+import { getUserLatestMessagesByFileId, insertMessage, updateFile } from '@/server/db/utils';
 
 import { AI_PREVIOUS_MESSAGES, AI_SIMILARITY_SEARCH_COUNT } from '@/config';
+import { NewFile } from '@/server/db/schema';
 
 let pineconeInstance: { pineconeIndex: any; embeddings: any } | null = null;
 export const getPineconeInstance = async () => {
@@ -41,12 +42,14 @@ export const getPineconeClient = async () => {
 // TODO: Vectorize different document types
 
 // vectorize and index entire document
-export const vectorizePDF = async (url: string, filePublicId: string) => {
+export const vectorizePDF = async (fileId: number, filePublicId: string, url: string) => {
   const reader = await fetch(url);
   const blob = await reader.blob();
   const loader = new PDFLoader(blob);
   const pageLevelDocs = await loader.load();
   const pagesAmt = pageLevelDocs.length;
+
+  await updateFile(fileId, { pages: pagesAmt } as NewFile);
 
   // let size = 0;
   // let maxPage = 0;
@@ -67,10 +70,18 @@ export const vectorizePDF = async (url: string, filePublicId: string) => {
   //await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, id: fileId.toString() });
   await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, namespace: filePublicId });
 
-  // TODO: Create a function to remove all documents from an index... and specific when user deletes de file
-  //await pineconeIndex.delete1({ deleteAll: true, namespace: '1' });
-
   // TODO: Validate if the document was vectorized correctly
+
+  await updateFile(fileId, { isProcessed: true } as NewFile);
+
+  return true;
+};
+
+export const removeDocumentFromIndex = async (filePublicId: string) => {
+  const { pineconeIndex } = await getPineconeInstance();
+
+  await pineconeIndex.delete1({ deleteAll: true, namespace: filePublicId });
+  await pineconeIndex.delete1({ deleteAll: true, namespace: '' });
 
   return true;
 };
