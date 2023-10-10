@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 
 import { useUploadThing } from '@/lib/uploadthing';
@@ -15,23 +13,30 @@ import { toast } from '@/components/ui/use-toast';
 import { ToastProps } from '@/components/ui/toast';
 import { getFileMaxSize } from '@/lib/utils';
 import { MAX_FILE_SIZE } from '@/config/files';
-import { getUserActiveSubscription } from '@/server/db/utils';
-import { getUserSubscriptionPlan } from '@/lib/stripe';
 
-const UploadDropzone = () => {
+const UploadButton = ({ maxFileSize = MAX_FILE_SIZE }: { maxFileSize?: string }) => {
+  const [isOpen, setIsOpen] = React.useState<boolean>(false);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(is_visible) => (is_visible ? false : setIsOpen(is_visible))}>
+      <DialogTrigger onClick={() => setIsOpen(true)} asChild>
+        <Button>Upload PDF</Button>
+      </DialogTrigger>
+
+      <DialogContent>
+        <UploadDropzone maxFileSize={maxFileSize} />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const UploadDropzone = ({ maxFileSize = MAX_FILE_SIZE }: { maxFileSize?: string }) => {
   const router = useRouter();
   const [isUploading, setIsUploading] = React.useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = React.useState<number>(0);
 
-  //
-  const maxFileSize = MAX_FILE_SIZE; // TODO: Use user's subscription plan to get max file size
   const maxFileSizeInBytes = getFileMaxSize(maxFileSize);
   const toastError = { title: 'Something went wrong', description: 'Please try again later', variant: 'destructive' } as ToastProps;
-
-  //const subscriptionPlan = getUserActiveSubscription();
-  const subscriptionPlan = getUserSubscriptionPlan();
-
-  console.log(subscriptionPlan);
 
   const { startUpload } = useUploadThing('pdfUploader', {
     onUploadBegin: (filename: string) => setIsUploading(true),
@@ -120,22 +125,6 @@ const UploadDropzone = () => {
         </div>
       )}
     </Dropzone>
-  );
-};
-
-const UploadButton = () => {
-  const [isOpen, setIsOpen] = React.useState<boolean>(false);
-
-  return (
-    <Dialog open={isOpen} onOpenChange={(is_visible) => (is_visible ? false : setIsOpen(is_visible))}>
-      <DialogTrigger onClick={() => setIsOpen(true)} asChild>
-        <Button>Upload PDF</Button>
-      </DialogTrigger>
-
-      <DialogContent>
-        <UploadDropzone />
-      </DialogContent>
-    </Dialog>
   );
 };
 

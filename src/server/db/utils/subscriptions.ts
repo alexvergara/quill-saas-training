@@ -56,9 +56,12 @@ export const upsertUserSubscription = async (publicId: string, subscription: New
 };
 
 export const updateUserCurrentSubscription = async (subscription: NewSubscription) => {
-  const currentSubscriptionId = subscription.subscriptionStatus === 'active' ? subscription.id : null;
-  return await db
-    .update(users)
-    .set({ currentSubscriptionId: currentSubscriptionId })
-    .where(and(eq(users.id, subscription.userId), eq(users.currentSubscriptionId, subscription.id!)));
+  if (subscription) {
+    const currentSubscriptionId = subscription.subscriptionStatus === 'active' ? subscription.id : null;
+    return await db
+      .update(users)
+      .set({ currentSubscriptionId: currentSubscriptionId })
+      .where(and(eq(users.id, subscription.userId), eq(users.currentSubscriptionId, subscription.id!)));
+  }
+  return false;
 };

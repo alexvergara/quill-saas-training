@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 
 import UploadButton from './UploadButton';
 import FileItem from './dashboard/FileItem';
+import { MAX_FILE_SIZE } from '@/config/files';
 //import { deleteFiles } from '@/app/_actions';
 //import { utapi } from '@/lib/uploadthing-utapi';
 
@@ -18,7 +19,12 @@ const Dashboard = () => {
   const [currentlyDeletingFile, setCurrentlyDeletingFile] = React.useState<number | null>(null);
   const [currentMode, setCurrentMode] = React.useState<number>(0); // TODO: Save in localStorage
 
+  //
+
   const utils = trpc.useContext();
+
+  const { data: subscriptionPlan } = trpc.getUserCurrentSubscriptionPlan.useQuery();
+  const maxFileSize = subscriptionPlan?.size ? subscriptionPlan?.size + 'MB' : MAX_FILE_SIZE; // TODO: Use user's subscription plan to get max file size
 
   const { data: userFiles, isLoading } = trpc.getUserFiles.useQuery();
 
@@ -52,7 +58,7 @@ const Dashboard = () => {
       <div className="flex flex-col items-start justify-between gap-4 border-b pb-5 sm:flex-row sm:inter-center sm:gap-0 border-gray-200 dark:border-gray-700">
         <h1 className="font-bold text-5xl text-gray-900 dark:text-slate-50">My Files</h1>
 
-        <UploadButton />
+        <UploadButton maxFileSize={maxFileSize} />
       </div>
 
       <div className="flex justify-end mt-2">
