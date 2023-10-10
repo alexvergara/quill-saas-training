@@ -22,6 +22,9 @@ export const upsertUserSubscription = async (publicId: string, subscription: New
 
   if (!user) throw new Error('User not found');
 
+  // TODO: Disable previous subscriptions ?
+  // TODO: Check if subscription exists... only 1 active per user ?
+
   const result = await getSubscriptionBySubscriptionId(subscription.subscriptionId || '');
   subscription.userId = user.id; // Enforce userId
 
@@ -48,5 +51,7 @@ export const upsertUserSubscription = async (publicId: string, subscription: New
 
   if (!dbSubscription || !dbSubscription.length) throw new Error('Could not create subscription');
 
-  db.update(users).set({ currentSubscriptionId: dbSubscription[0].id }).where(eq(users.id, user.id));
+  // TODO: Validate active subscription
+  const subscription_id = dbSubscription[0].subscriptionStatus === 'active' ? dbSubscription[0].id : 0;
+  await db.update(users).set({ currentSubscriptionId: subscription_id }).where(eq(users.id, user.id));
 };

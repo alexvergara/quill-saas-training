@@ -1,4 +1,4 @@
-import type { UserWithSubscription } from '@/server/db/schema';
+import type { UserWithCurrentSubscription } from '@/server/db/schema';
 
 import { stripe, getUserSubscriptionPlan } from '@/lib/stripe';
 import { privateProcedure } from '../trpc';
@@ -6,7 +6,7 @@ import { getBaseUrl } from '@/lib/utils';
 import { TRPCError } from '@trpc/server';
 import { getUserById } from '@/server/db/utils';
 
-import { PAYMENT_METHOD_TYPES, PLAN_DETAILS, STRIPE_PLANS } from '@/config';
+import { PAYMENT_METHOD_TYPES, PLAN_DETAILS } from '@/config';
 import { z } from 'zod';
 
 export const stripeRouter = {
@@ -16,14 +16,14 @@ export const stripeRouter = {
 
     if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You must be logged in to access this route (stripe.createStripeSession 1).' });
 
-    const user = (await getUserById(userId, { with: { subscription: true } })) as UserWithSubscription;
+    const user = (await getUserById(userId, { with: { currentSubscription: true } })) as UserWithCurrentSubscription;
 
     const subscriptionPlan = await getUserSubscriptionPlan();
-    const billingUrl = 'http://' + getBaseUrl() + '/billing';
+    const billingUrl = getBaseUrl() + '/billing';
 
-    if (subscriptionPlan.isSubscribed && user.subscription?.customerId) {
+    if (subscriptionPlan.isSubscribed && user.currentSubscription?.customerId) {
       const stripeSession = await stripe.billingPortal.sessions.create({
-        customer: user.subscription.customerId,
+        customer: user.currentSubscription.customerId,
         return_url: billingUrl
       });
 
@@ -32,48 +32,33 @@ export const stripeRouter = {
 
     const planDetails = PLAN_DETAILS()[plan as keyof typeof PLAN_DETAILS] as any;
 
-    console.log('createStripeSession userId', userId);
-    console.log('subscriptionPlan', subscriptionPlan);
-    console.log('planDetails', planDetails);
-    console.log('billingUrl', billingUrl);
-    //console.log('PLAN_DETAILS()', Object.values(PLAN_DETAILS()));
-
-    /*const line_items = STRIPE_PLANS.filter((plan) => !!plan.price.amount).map((plan) => ({
-      quantity: 1,
-      price: plan.price.priceIds.test // TODO: Use ENV to switch between test and production
-    }));*/
-
-    /*console.log(line_items);
-
-    const line_items2 = Object.values(PLAN_DETAILS())
-      .filter((plan) => !!plan.price.amount)
-      .map((plan) => ({
-        quantity: 1,
-        price: plan.price.priceIds.test // TODO: Use ENV to switch between test and production
-      }));
-
-    console.log(line_items2);*/
-
     const stripeSession = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      payment_method_types: PAYMENT_METHOD_TYPES,
+      //payment_method_types: PAYMENT_METHOD_TYPES, // Does not work with subscription or payment modes... only required on setup mode
       success_url: billingUrl,
       cancel_url: billingUrl,
-      line_items: Object.values(PLAN_DETAILS())
+      /*line_items: Object.values(PLAN_DETAILS())
         .filter((plan) => !!plan.price.amount)
         .map((plan) => ({
           quantity: 1,
           price: plan.price.priceIds.test // TODO: Use ENV to switch between test and production
-        })),
+        })),*/
+      line_items: [
+        {
+          quantity: 1,
+          price: planDetails.price.priceIds.test // TODO: Use ENV to switch between test and production
+        }
+      ],
+      client_reference_id: publicId,
+      // currency: 'usd', || 'cop'
+      locale: 'es', // 'en',
       metadata: {
         publicId,
-        id: planDetails.id || 'Trial',
-        size: planDetails.size || 0,
-        pages: planDetails.pages || 0
+        plan_id: planDetails.id || 'Trial',
+        pages: planDetails.pages || 0,
+        size: planDetails.size || 0
       }
     });
-
-    console.log('stripeSession');
 
     return { url: stripeSession.url };
   })

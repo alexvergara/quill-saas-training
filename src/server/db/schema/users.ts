@@ -36,7 +36,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   files: many(files),
   messages: many(messages),
   subscriptions: many(subscriptions),
-  subscription: one(subscriptions, {
+  currentSubscription: one(subscriptions, {
     fields: [users.currentSubscriptionId],
     references: [subscriptions.id]
   })
@@ -45,6 +45,6 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export type User = typeof users.$inferSelect; // return type when queried
 export type NewUser = typeof users.$inferInsert; // insert type
 
-export interface UserWithSubscription extends User {
-  subscription?: Subscription;
+export interface UserWithCurrentSubscription extends User {
+  currentSubscription?: Subscription;
 }

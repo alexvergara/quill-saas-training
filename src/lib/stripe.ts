@@ -1,4 +1,4 @@
-import type { UserWithSubscription } from '@/server/db/schema';
+import type { UserWithCurrentSubscription } from '@/server/db/schema';
 
 import Stripe from 'stripe';
 import { currentUser } from '@clerk/nextjs';
@@ -10,11 +10,11 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersi
 
 export async function getUserSubscriptionPlan() {
   const clerkUser = await currentUser();
-  const user = (await getUserByPublicId(clerkUser?.id || '', { with: { subscription: true } })) as UserWithSubscription;
+  const user = (await getUserByPublicId(clerkUser?.id || '', { with: { currentSubscription: true } })) as UserWithCurrentSubscription;
 
-  if (!user || !user.subscription) {
+  if (!user || !user.currentSubscription) {
     return {
-      ...PLAN_DETAILS.Trial,
+      ...PLAN_DETAILS().Trial,
       isSubscribed: false,
       isCanceled: false,
       stripeCurrentPeriodEnd: null
@@ -22,26 +22,26 @@ export async function getUserSubscriptionPlan() {
   }
 
   const isSubscribed = Boolean(
-    user.subscription.priceId &&
-      user.subscription.currentPeriodEnd && // 86400000 = 1 day
-      user.subscription.currentPeriodEnd.getTime() + 86_400_000 > Date.now() // TODO: Calculate in a better way ?
+    user.currentSubscription.priceId &&
+      user.currentSubscription.currentPeriodEnd && // 86400000 = 1 day
+      user.currentSubscription.currentPeriodEnd.getTime() + 86_400_000 > Date.now() // TODO: Calculate in a better way ?
   );
 
   const plan = isSubscribed
-    ? Object.values(PLAN_DETAILS).find((plan) => plan.price.priceIds.test === user.subscription?.priceId) // TODO: Use ENV to switch between test and production
+    ? Object.values(PLAN_DETAILS()).find((plan) => plan.price.priceIds.test === user.currentSubscription?.priceId) // TODO: Use ENV to switch between test and production
     : null;
 
   let isCanceled = false;
-  if (isSubscribed && user.subscription.subscriptionId) {
-    const stripePlan = await stripe.subscriptions.retrieve(user.subscription.subscriptionId);
+  if (isSubscribed && user.currentSubscription.subscriptionId) {
+    const stripePlan = await stripe.subscriptions.retrieve(user.currentSubscription.subscriptionId);
     isCanceled = stripePlan.cancel_at_period_end;
   }
 
   return {
     ...plan,
-    stripeSubscriptionId: user.subscription.subscriptionId,
-    stripeCurrentPeriodEnd: user.subscription.currentPeriodEnd,
-    stripeCustomerId: user.subscription.customerId,
+    stripeSubscriptionId: user.currentSubscription.subscriptionId,
+    stripeCurrentPeriodEnd: user.currentSubscription.currentPeriodEnd,
+    stripeCustomerId: user.currentSubscription.customerId,
     isSubscribed,
     isCanceled
   };

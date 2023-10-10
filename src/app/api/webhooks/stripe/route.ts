@@ -28,14 +28,15 @@ export async function POST(request: Request) {
       currentPeriodEnd: new Date(subscription.current_period_end * 1000)
     } as NewSubscription);
   } else if (event.type === 'checkout.session.completed') {
-    if (!session?.metadata?.userId) {
-      return new Response('Error: Metadata UserId not set', { status: 404 });
+    if (!session?.metadata?.publicId) {
+      return new Response('Error: Metadata publicId not set', { status: 404 });
     }
 
     const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
-    await upsertUserSubscription(session.metadata.userId, {
-      plan: session.metadata.plan as string,
+    // We could use session.metadata.publicId as well
+    await upsertUserSubscription(session.client_reference_id!, {
+      plan: session.metadata.plan_id as string,
       priceId: subscription.items.data[0].price.id,
       customerId: subscription.customer as string,
       subscriptionId: subscription.id,

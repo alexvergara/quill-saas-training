@@ -9,7 +9,7 @@ const nextConfig = {
 
   images: {
     //domains: ['localhost', 'loremflickr.com', 'uploadthing.com', 'res.cloudinary.com'], // TODO: localDev ?
-    domains: ['localhost', 'uploadthing.com', 'img.clerk.com'] // TODO: localDev ?
+    domains: ['localhost', 'dev.famver.com', 'uploadthing.com', 'img.clerk.com'] // TODO: localDev ?
   },
 
   async redirects() {
