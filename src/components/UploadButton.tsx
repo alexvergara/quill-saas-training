@@ -16,21 +16,29 @@ import { MAX_FILE_SIZE } from '@/config/files';
 
 const UploadButton = ({ maxFileSize = MAX_FILE_SIZE }: { maxFileSize?: string }) => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
+  const [isFileDialogOpen, setIsFileDialogOpen] = React.useState<boolean>(false);
+
+  console.log(isFileDialogOpen ? ' open ' : ' closed ');
 
   return (
-    <Dialog open={isOpen} onOpenChange={(is_visible) => (is_visible ? false : setIsOpen(is_visible))}>
+    <Dialog open={isOpen || isFileDialogOpen} onOpenChange={(is_visible) => (is_visible ? false : setIsOpen(is_visible))}>
       <DialogTrigger onClick={() => setIsOpen(true)} asChild>
         <Button>Upload PDF</Button>
       </DialogTrigger>
-
       <DialogContent>
-        <UploadDropzone maxFileSize={maxFileSize} />
+        <UploadDropzone
+          maxFileSize={maxFileSize}
+          toggleFileDialogOpen={() => {
+            alert('toggle2');
+            setIsFileDialogOpen((open) => !open);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
 };
 
-const UploadDropzone = ({ maxFileSize = MAX_FILE_SIZE }: { maxFileSize?: string }) => {
+const UploadDropzone = ({ toggleFileDialogOpen, maxFileSize = MAX_FILE_SIZE }: { toggleFileDialogOpen: () => void; maxFileSize?: string }) => {
   const router = useRouter();
   const [isUploading, setIsUploading] = React.useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = React.useState<number>(0);
@@ -79,9 +87,9 @@ const UploadDropzone = ({ maxFileSize = MAX_FILE_SIZE }: { maxFileSize?: string 
   };
 
   return (
-    <Dropzone multiple={false} accept={{ 'application/pdf': ['.pdf'] }} maxSize={maxFileSizeInBytes} minSize={512} noClick={true} onDropRejected={(e) => handleDropRejected(e)} onDropAccepted={(acceptedFile) => startUpload(acceptedFile)}>
+    <Dropzone onFileDialogOpen={toggleFileDialogOpen} onFileDialogCancel={toggleFileDialogOpen} multiple={false} accept={{ 'application/pdf': ['.pdf'] }} maxSize={maxFileSizeInBytes} minSize={512} noClick={true} onDropRejected={(e) => handleDropRejected(e)} onDropAccepted={(acceptedFile) => startUpload(acceptedFile)}>
       {({ getRootProps, getInputProps, acceptedFiles, isDragActive }) => (
-        <div {...getRootProps()} className="border h-64 border-dashed border-gray-300 rounded-lg dark:border-slate-600">
+        <div {...getRootProps()} onClick={toggleFileDialogOpen} className="border h-64 border-dashed border-gray-300 rounded-lg dark:border-slate-600">
           <div className="flex items-center justify-center h-full w-full">
             <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-full rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-slate-900 dark:hover:bg-slate-800">
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
