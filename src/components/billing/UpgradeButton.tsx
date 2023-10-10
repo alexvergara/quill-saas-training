@@ -5,19 +5,28 @@ import { currentUser } from '@clerk/nextjs';
 import { ArrowRightIcon } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 
+import { users } from '@/server/db/schema';
+import { db } from '@/server/db/client';
+import { eq } from 'drizzle-orm';
+
 const UpgradeButton = async ({ plan }: { plan: any }) => {
-  const user = await currentUser();
+  const clerkUser = await currentUser();
+
+  let user = { id: 0, currentSubscription: {} } as any;
+  if (clerkUser) user = await db.query.users.findFirst({ where: eq(users.publicId, clerkUser.id), with: { currentSubscription: true } });
+
+  const isCurrent = user.currentSubscription?.planId === plan.planId;
 
   let text = 'Sign up';
-  let href = '/auth/sign-up';
+  let href = '/auth/sign-up?redirect=/pricing';
   let variant;
-  if (user) {
+  if (user.id) {
     text = 'Goto dashboard';
     href = '/dashboard';
     variant = 'ghost' as const;
     if (plan.price) {
-      text = 'Upgrade now';
-      href = `/billing/stripe?plan=${plan.id}`;
+      text = isCurrent ? 'Manage subscription' : 'Upgrade now';
+      href = isCurrent ? '/billing' : `/billing/stripe?planId=${plan.planId}`;
       variant = undefined;
     }
   }

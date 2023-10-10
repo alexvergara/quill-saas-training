@@ -1,6 +1,6 @@
-export const PLAN_DETAILS = () => ({
+export const PLAN_DETAILS = {
   Trial: {
-    id: 'Trial',
+    planId: 'Trial',
     name: 'Trial Plan',
     slug: 'trial',
     size: 5,
@@ -8,7 +8,7 @@ export const PLAN_DETAILS = () => ({
     pages: 5,
     available: 5,
     interval: 'month',
-    interval_count: 1,
+    intervalCount: 1,
     price: {
       amount: 0,
       priceIds: {
@@ -19,7 +19,7 @@ export const PLAN_DETAILS = () => ({
   },
 
   Basic: {
-    id: 'Basic',
+    planId: 'Basic',
     name: 'Basic Plan',
     slug: 'basic',
     size: 10,
@@ -27,7 +27,7 @@ export const PLAN_DETAILS = () => ({
     pages: 25,
     available: 25,
     interval: 'month',
-    interval_count: 1,
+    intervalCount: 1,
     price: {
       amount: 5, // ??
       priceIds: {
@@ -36,11 +36,11 @@ export const PLAN_DETAILS = () => ({
       }
     }
   }
-});
+};
 
-export const PLAN_FEATURES = () => ({
+export const PLAN_FEATURES = {
   default: {
-    id: 'Trial',
+    planId: 'Trial',
     tagline: 'For small side projects.',
     quota: 0,
     price: 0,
@@ -69,7 +69,7 @@ export const PLAN_FEATURES = () => ({
     }
   },
   basic: {
-    id: 'Basic',
+    planId: 'Basic',
     popular: true,
     tagline: 'For larger projects with higher needs.',
     features: {
@@ -77,4 +77,4 @@ export const PLAN_FEATURES = () => ({
       responses: { missing: false }
     }
   }
-});
+};

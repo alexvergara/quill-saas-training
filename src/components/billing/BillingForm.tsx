@@ -34,30 +34,38 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps) => {
 
   return (
     <MaxWidthWrapper className="max-w-5xl">
-      {/* <form className='mt-12' onSubmit={(e) => { e.preventDefault(); createStripeSession(); }}>
+      <form
+        className="mt-12"
+        onSubmit={(e) => {
+          e.preventDefault();
+          createStripeSession();
+        }}
+      >
         <Card>
           <CardHeader>
             <CardTitle>Subscription Plan</CardTitle>
-            <CardDescription>You are currently subscribed: <strong>{subscriptionPlan.name}</strong>.</CardDescription>
+            <CardDescription>
+              You are currently subscribed: <strong>{subscriptionPlan.name}</strong>.
+            </CardDescription>
           </CardHeader>
 
           <CardFooter className="flex flex-col items-start space-y-2 md:flex-row md:justify-between md:space-x-0">
-            <Button type='submit'>
-              {isLoading ? (
-                <Loader2Icon className="animate-spin w-4 h-4 mr-4" />
-              ) : null}
+            <Button type="submit">
+              {isLoading ? <Loader2Icon className="animate-spin w-4 h-4 mr-4" /> : null}
               {subscriptionPlan.isSubscribed ? 'Manage Subscription' : 'Upgrade Now'}
             </Button>
 
             {subscriptionPlan.isSubscribed ? (
-              <p className='rounded-full text-xs font-medium'>
+              <p className="rounded-full text-xs font-medium">
                 {subscriptionPlan.isCanceled ? 'Your plan will be canceled on ' : 'Your plan renews on '}
-                <b>{format(subscriptionPlan.stripeCurrentPeriodEnd!, 'MMM dd yyyy')}</b> {/* 'yyyy-MM-dd')} {/* // TODO: Use locale format * /}
+                <b>{format(subscriptionPlan.stripeCurrentPeriodEnd!, 'MMM dd yyyy')}</b> {/* 'yyyy-MM-dd')} {/* // TODO: Use locale format */}
               </p>
-            ) : 'Upgrade Now'}
+            ) : (
+              'Upgrade Now'
+            )}
           </CardFooter>
         </Card>
-      </form> */}
+      </form>
     </MaxWidthWrapper>
   );
 };

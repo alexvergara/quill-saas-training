@@ -1,7 +1,7 @@
-import { desc, eq } from 'drizzle-orm';
+import { users, subscriptions, type NewSubscription } from '../schema';
+import { and, desc, eq } from 'drizzle-orm';
 import { db } from '../client';
 
-import { users, subscriptions, type NewSubscription } from '../schema';
 import { PLAN_DETAILS } from '@/config';
 
 export const getUserActiveSubscription = (userId: number, options = {}) => {
@@ -13,8 +13,11 @@ export const getSubscriptionBySubscriptionId = (subscriptionId: string, options 
 };
 
 export const updateSubscriptionBySubscriptionId = async (subscriptionId: string, subscription: NewSubscription) => {
-  // TODO: Update user subscriptionId ?
-  return db.update(subscriptions).set(subscription).where(eq(subscriptions.subscriptionId, subscriptionId)).returning();
+  const dbSubscriptions = await db.update(subscriptions).set(subscription).where(eq(subscriptions.subscriptionId, subscriptionId)).returning();
+
+  await updateUserCurrentSubscription(dbSubscriptions[0]);
+
+  return dbSubscriptions;
 };
 
 export const upsertUserSubscription = async (publicId: string, subscription: NewSubscription) => {
@@ -22,18 +25,14 @@ export const upsertUserSubscription = async (publicId: string, subscription: New
 
   if (!user) throw new Error('User not found');
 
-  // TODO: Disable previous subscriptions ?
-  // TODO: Check if subscription exists... only 1 active per user ?
-
   const result = await getSubscriptionBySubscriptionId(subscription.subscriptionId || '');
   subscription.userId = user.id; // Enforce userId
 
-  //await db.insert(subscriptions).values(subscription).onConflictDoUpdate({ target: subscription.subscriptionId, set: subscription }).returning();
-
   // TODO: Upsert ?
+  //await db.insert(subscriptions).values(subscription).onConflictDoUpdate({ target: subscription.subscriptionId, set: subscription }).returning();
   let dbSubscription;
   if (!result) {
-    const details = PLAN_DETAILS()[subscription.plan as keyof typeof PLAN_DETAILS] as any;
+    const details = PLAN_DETAILS[subscription.planId as keyof typeof PLAN_DETAILS] as any;
 
     subscription.quota = 0;
     subscription.maxSize = details.size;
@@ -51,7 +50,15 @@ export const upsertUserSubscription = async (publicId: string, subscription: New
 
   if (!dbSubscription || !dbSubscription.length) throw new Error('Could not create subscription');
 
-  // TODO: Validate active subscription
-  const subscription_id = dbSubscription[0].subscriptionStatus === 'active' ? dbSubscription[0].id : 0;
-  await db.update(users).set({ currentSubscriptionId: subscription_id }).where(eq(users.id, user.id));
+  await updateUserCurrentSubscription(dbSubscription[0]);
+
+  return dbSubscription[0];
+};
+
+export const updateUserCurrentSubscription = async (subscription: NewSubscription) => {
+  const currentSubscriptionId = subscription.subscriptionStatus === 'active' ? subscription.id : null;
+  return await db
+    .update(users)
+    .set({ currentSubscriptionId: currentSubscriptionId })
+    .where(and(eq(users.id, subscription.userId), eq(users.currentSubscriptionId, subscription.id!)));
 };

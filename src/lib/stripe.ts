@@ -14,7 +14,7 @@ export async function getUserSubscriptionPlan() {
 
   if (!user || !user.currentSubscription) {
     return {
-      ...PLAN_DETAILS().Trial,
+      ...PLAN_DETAILS.Trial,
       isSubscribed: false,
       isCanceled: false,
       stripeCurrentPeriodEnd: null
@@ -28,7 +28,7 @@ export async function getUserSubscriptionPlan() {
   );
 
   const plan = isSubscribed
-    ? Object.values(PLAN_DETAILS()).find((plan) => plan.price.priceIds.test === user.currentSubscription?.priceId) // TODO: Use ENV to switch between test and production
+    ? Object.values(PLAN_DETAILS).find((plan) => plan.price.priceIds.test === user.currentSubscription?.priceId) // TODO: Use ENV to switch between test and production
     : null;
 
   let isCanceled = false;

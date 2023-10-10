@@ -8,11 +8,11 @@ import { trpc } from '@/app/_trpc/client';
 let redirect = false;
 const StipeBillingPage = () => {
   const searchParams = useSearchParams();
-  const plan = searchParams.get('plan') || 'Trial';
+  const planId = searchParams.get('planId');
 
   const { mutate: createStripeSession, isLoading } = trpc.createStripeSession.useMutation({
     onSuccess: ({ url }) => {
-      console.log('STRIP SESSION URL', url);
+      //console.log('STRIPE SESSION URL', url);
 
       window.location.href = url ?? '/billing';
     },
@@ -22,9 +22,9 @@ const StipeBillingPage = () => {
   });
 
   React.useEffect(() => {
-    if (!redirect) createStripeSession({ plan });
+    if (!redirect && planId) createStripeSession({ planId });
     redirect = true;
-  }, [redirect]);
+  }, [redirect, planId]);
 
   return <div>Redirecting...</div>;
 };

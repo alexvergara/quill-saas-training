@@ -54,12 +54,12 @@ const UserAccountNav = async ({ user }: UserAccountNavProps) => {
 
         <DropdownMenuSeparator className="bg-zinc-700 dark:bg-slate-500" />
 
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild className="hover:bg-gray-200 dark:hover:bg-slate-700">
           <Link href="/dashboard" className="flex items-center justify-start gap-2 p-2">
             Dashboard
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild className="hover:bg-gray-200 dark:hover:bg-slate-700">
           {/* {isSubscribed ? (
             <Link href="/billing" className="flex items-center justify-start gap-2 p-2">
               Manage subscription ({subscriptionPlan.name})
@@ -73,7 +73,7 @@ const UserAccountNav = async ({ user }: UserAccountNavProps) => {
 
         <DropdownMenuSeparator className="bg-zinc-700 dark:bg-slate-500" />
 
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild className="w-full hover:bg-gray-200 dark:hover:bg-slate-700">
           <SignOutButton />
         </DropdownMenuItem>
       </DropdownMenuContent>

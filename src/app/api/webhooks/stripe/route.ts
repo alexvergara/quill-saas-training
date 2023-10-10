@@ -17,9 +17,9 @@ export async function POST(request: Request) {
     return new Response(`Webhook Error: ${err instanceof Error ? err.message : 'Unknown Error'}`, { status: 400 });
   }
 
-  const session = event.data.object as Stripe.Checkout.Session;
-
   if (event.type === 'invoice.payment_succeeded') {
+    const session = event.data.object as Stripe.Checkout.Session;
+
     // Retrieve the subscription details from Stripe.
     const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
@@ -28,26 +28,32 @@ export async function POST(request: Request) {
       currentPeriodEnd: new Date(subscription.current_period_end * 1000)
     } as NewSubscription);
   } else if (event.type === 'checkout.session.completed') {
-    if (!session?.metadata?.publicId) {
-      return new Response('Error: Metadata publicId not set', { status: 404 });
-    }
+    const session = event.data.object as Stripe.Checkout.Session;
+
+    if (!session?.metadata?.publicId) return new Response('Error: Metadata publicId not set', { status: 404 });
 
     const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
     // We could use session.metadata.publicId as well
     await upsertUserSubscription(session.client_reference_id!, {
-      plan: session.metadata.plan_id as string,
+      planId: session.metadata.planId as string,
       priceId: subscription.items.data[0].price.id,
       customerId: subscription.customer as string,
       subscriptionId: subscription.id,
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
       subscriptionStatus: subscription.status as string
+      // Quantity ?
+    } as NewSubscription);
+  } else if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object as Stripe.Subscription;
 
-      /*
-      subscriptionQuantity: subscription.items.data[0].quantity
-      */
+    await updateSubscriptionBySubscriptionId(subscription.id, {
+      subscriptionStatus: subscription.status as string, // TODO: Use session.status instead of subscription.status ??
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000)
     } as NewSubscription);
   }
+
+  // TODO: Customer deleted
 
   return new Response(null, { status: 200 });
 }

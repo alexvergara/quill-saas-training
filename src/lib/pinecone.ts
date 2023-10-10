@@ -81,7 +81,7 @@ export const removeDocumentFromIndex = async (filePublicId: string) => {
   const { pineconeIndex } = await getPineconeInstance();
 
   await pineconeIndex.delete1({ deleteAll: true, namespace: filePublicId });
-  await pineconeIndex.delete1({ deleteAll: true, namespace: 'fc62be82-9639-494d-ae34-f2edbb5ae85e' });
+  await pineconeIndex.delete1({ deleteAll: true, namespace: 'fc62be82-9639-494d-ae34-f2edbb5ae85e' }); // TODO: REMOVE!!
 
   return true;
 };

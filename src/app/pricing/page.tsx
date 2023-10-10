@@ -1,3 +1,8 @@
+import { currentUser } from '@clerk/nextjs';
+import { users } from '@/server/db/schema';
+import { db } from '@/server/db/client';
+import { eq } from 'drizzle-orm';
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CheckIcon, HelpCircleIcon, MinusIcon } from 'lucide-react';
 import { cn, dm } from '@/lib/utils';
@@ -6,20 +11,27 @@ import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import UpgradeButton from '@/components/billing/UpgradeButton';
 import { PLAN_DETAILS, PLAN_FEATURES } from '@/config';
 
-const PricingPage = () => {
+const PricingPage = async () => {
+  const clerkUser = await currentUser();
+
+  let user = null;
+  if (clerkUser) user = await db.query.users.findFirst({ where: eq(users.publicId, clerkUser.id), with: { currentSubscription: true } });
+
   const parsedPlans = [];
 
-  for (const index in PLAN_FEATURES()) {
-    const basePlan = PLAN_FEATURES()[index as keyof typeof PLAN_FEATURES];
-    const plan = index !== 'default' ? dm(basePlan, { ...PLAN_FEATURES()['default'] }) : basePlan;
-    const details = PLAN_DETAILS()[plan.id as keyof typeof PLAN_DETAILS] as any;
+  for (const index in PLAN_FEATURES) {
+    const basePlan = PLAN_FEATURES[index as keyof typeof PLAN_FEATURES];
+    const plan = JSON.parse(JSON.stringify(index !== 'default' ? dm(basePlan, PLAN_FEATURES.default) : basePlan)); // Force new object!
+    const details = PLAN_DETAILS[plan.planId as keyof typeof PLAN_DETAILS] as any;
 
     plan.quota = details.quota;
     plan.price = details.price.amount;
     plan.features.size.text = plan.features.size.text.replace('{size}', details.size ? `${details.size} MB` : 'Unlimited');
     plan.features.pages.text = plan.features.pages.text.replace('{pages}', details.pages ? details.pages : 'Unlimited');
 
-    parsedPlans.push({ ...plan });
+    plan.title = user?.currentSubscription?.planId === plan.planId ? 'Your subscription' : 'Upgrade now';
+
+    parsedPlans.push(plan);
   }
 
   return (
@@ -33,7 +45,7 @@ const PricingPage = () => {
         <TooltipProvider>
           {parsedPlans.map((plan: any) => (
             <div className={cn('relative rounded-2xl bg-white dark:bg-gray-800 shadow-lg border', plan.popular ? 'border-2 border-blue-600 shadow-blue-200 dark:shadow-blue-900' : 'border-gray-200')} key={plan.id}>
-              {plan.popular && <div className="absolute -top-5 left-0 right-0 mx-auto w-32 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-sm font-medium text-white">Upgrade now</div>}
+              {plan.popular && <div className="absolute -top-5 left-0 right-0 mx-auto max-w-fit rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 px-5 py-2 text-sm font-medium text-white">{plan.title}</div>}
 
               <div className="p-5">
                 <h3 className="my-3 text-center font-display text-3xl font-bold">{plan.name}</h3>
