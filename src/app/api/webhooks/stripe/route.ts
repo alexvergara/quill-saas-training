@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
     await upsertUserSubscription(session.metadata.userId, {
+      plan: session.metadata.plan as string,
       priceId: subscription.items.data[0].price.id,
       customerId: subscription.customer as string,
       subscriptionId: subscription.id,

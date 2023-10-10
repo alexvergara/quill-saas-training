@@ -6,6 +6,7 @@ import { vectorizePDF } from '@/lib/pinecone';
 import { getUserByPublicId, insertFile, updateFile } from '@/server/db/utils';
 import { uploadStatusEnum } from '@/server/db/schema';
 import { MAX_FILE_SIZE } from '@/config/files';
+import { getUserSubscriptionPlan } from '@/lib/stripe';
 
 const f = createUploadthing();
 
@@ -20,7 +21,9 @@ export const ourFileRouter = {
 
       if (!publicId || !user) throw new Error('Unauthorized');
 
-      return { publicId, userId: user.id };
+      const subscriptionPlan = getUserSubscriptionPlan();
+
+      return { publicId, userId: user.id, subscriptionPlan };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       const newFile = await insertFile({

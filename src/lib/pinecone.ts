@@ -81,7 +81,7 @@ export const removeDocumentFromIndex = async (filePublicId: string) => {
   const { pineconeIndex } = await getPineconeInstance();
 
   await pineconeIndex.delete1({ deleteAll: true, namespace: filePublicId });
-  await pineconeIndex.delete1({ deleteAll: true, namespace: '' });
+  await pineconeIndex.delete1({ deleteAll: true, namespace: 'fc62be82-9639-494d-ae34-f2edbb5ae85e' });
 
   return true;
 };
@@ -179,9 +179,6 @@ export const vectorizeUnstructured = async (url: string, filePublicId: string) =
 
   //await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, id: fileId.toString() });
   await PineconeStore.fromDocuments(pageLevelDocs, embeddings, { pineconeIndex, namespace: filePublicId });
-
-  // TODO: Create a function to remove all documents from an index... and specific when user deletes de file
-  //await pineconeIndex.delete1({ deleteAll: true, namespace: '1' });
 
   return true;
 };

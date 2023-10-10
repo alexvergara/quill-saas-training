@@ -1,6 +1,7 @@
-import { MAX_FILE_SIZE } from '@/config/files';
+import type { Metadata } from 'next/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { MAX_FILE_SIZE } from '@/config/files';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -31,4 +32,49 @@ export const getFileMaxSize = (maxFileSize?: string) => {
 
   //return Math.floor(parseFloat(size) * (1024 ** units.indexOf(unit) + 1));
   return Math.floor(parseFloat(size) * Math.pow(1024, units.indexOf(unit)));
+};
+
+export const constructMetadata = ({
+  title = 'Quill - the SasS for students',
+  description = 'Quill is a SasS for students to help them with their homework',
+  image = '/img/thumbnail.png',
+  icons = '/core/favicon.png',
+  noIndex = false
+}: {
+  title?: string;
+  description?: string;
+  image?: string;
+  icons?: string;
+  noIndex?: boolean;
+} = {}): Metadata => {
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: image,
+          alt: title
+        }
+      ]
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+      creator: '@Quill'
+    },
+    icons,
+    metadataBase: new URL('https://quill.famver.com'),
+    themeColor: '#ffffff',
+    ...(noIndex && {
+      robots: {
+        index: false,
+        follow: false
+      }
+    })
+  };
 };

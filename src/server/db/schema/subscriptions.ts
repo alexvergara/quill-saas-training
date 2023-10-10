@@ -9,6 +9,15 @@ export const subscriptions = pgTable('subscriptions', {
   userId: integer('user_id').notNull(), //.references(() => users.id),
   active: boolean('active').default(true),
 
+  plan: text('plan'),
+  quota: integer('quota').default(0),
+  maxSize: integer('max_size').default(0),
+  maxPages: integer('max_pages').default(0),
+  maxFiles: integer('max_files').default(0),
+  available: integer('available').default(0),
+  interval: text('interval'),
+  // TODO: Add more fields
+
   priceId: text('price_id'), // .unique() creates conflicts
   customerId: text('customer_id'), // .unique() creates conflicts
   subscriptionId: text('subscription_id'), // .unique() creates conflicts

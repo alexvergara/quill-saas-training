@@ -1,6 +1,7 @@
-export const PLAN_DETAILS = {
+export const PLAN_DETAILS = () => ({
   Trial: {
-    name: 'Trial',
+    id: 'Trial',
+    name: 'Trial Plan',
     slug: 'trial',
     size: 5,
     quota: 10,
@@ -18,11 +19,12 @@ export const PLAN_DETAILS = {
   },
 
   Basic: {
+    id: 'Basic',
     name: 'Basic Plan',
     slug: 'basic',
     size: 10,
     quota: 50,
-    pages: 50,
+    pages: 25,
     available: 25,
     interval: 'month',
     interval_count: 1,
@@ -34,11 +36,11 @@ export const PLAN_DETAILS = {
       }
     }
   }
-}
+});
 
-export const PLAN_FEATURES = {
+export const PLAN_FEATURES = () => ({
   default: {
-    name: 'Trial',
+    id: 'Trial',
     tagline: 'For small side projects.',
     quota: 0,
     price: 0,
@@ -46,33 +48,33 @@ export const PLAN_FEATURES = {
     features: {
       pages: {
         text: '{pages} pages per PDF',
-        footnote: 'The maximum amount of pages per PDF-file.',
+        footnote: 'The maximum amount of pages per PDF-file.'
       },
       size: {
         text: '{size} file size limit',
-        footnote: 'The maximum file size of a single PDF file.',
+        footnote: 'The maximum file size of a single PDF file.'
       },
       mobile: {
-        text: 'Mobile-friendly interface',
+        text: 'Mobile-friendly interface'
       },
       responses: {
         text: 'Higher-quality responses',
         footnote: 'Better algorithmic responses for enhanced content quality',
-        missing: true,
+        missing: true
       },
       support: {
         text: 'Priority support',
-        missing: true,
-      },
-    },
+        missing: true
+      }
+    }
   },
-  Basic: {
-    name: 'Basic',
+  basic: {
+    id: 'Basic',
     popular: true,
     tagline: 'For larger projects with higher needs.',
     features: {
       support: { missing: false },
-      responses: { missing: false },
-    },
-  },
-};
+      responses: { missing: false }
+    }
+  }
+});

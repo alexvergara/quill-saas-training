@@ -2,6 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '../client';
 
 import { users, subscriptions, type NewSubscription } from '../schema';
+import { PLAN_DETAILS } from '@/config';
 
 export const getUserActiveSubscription = (userId: number, options = {}) => {
   return db.query.subscriptions.findFirst({ where: (messages, { eq, and }) => and(eq(messages.active, true), eq(messages.userId, userId)), orderBy: [desc(subscriptions.id)], ...options });
@@ -29,6 +30,13 @@ export const upsertUserSubscription = async (publicId: string, subscription: New
   // TODO: Upsert ?
   let dbSubscription;
   if (!result) {
+    const details = PLAN_DETAILS()[subscription.plan as keyof typeof PLAN_DETAILS] as any;
+
+    subscription.quota = 0;
+    subscription.maxSize = details.size;
+    subscription.maxPages = details.pages;
+    subscription.maxFiles = details.quota;
+
     dbSubscription = await db.insert(subscriptions).values(subscription).returning();
   } else {
     dbSubscription = await db

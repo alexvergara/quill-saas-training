@@ -15,7 +15,8 @@ import { toast } from '@/components/ui/use-toast';
 import { ToastProps } from '@/components/ui/toast';
 import { getFileMaxSize } from '@/lib/utils';
 import { MAX_FILE_SIZE } from '@/config/files';
-import { updateFile } from '@/server/db/utils';
+import { getUserActiveSubscription } from '@/server/db/utils';
+import { getUserSubscriptionPlan } from '@/lib/stripe';
 
 const UploadDropzone = () => {
   const router = useRouter();
@@ -26,6 +27,11 @@ const UploadDropzone = () => {
   const maxFileSize = MAX_FILE_SIZE; // TODO: Use user's subscription plan to get max file size
   const maxFileSizeInBytes = getFileMaxSize(maxFileSize);
   const toastError = { title: 'Something went wrong', description: 'Please try again later', variant: 'destructive' } as ToastProps;
+
+  //const subscriptionPlan = getUserActiveSubscription();
+  const subscriptionPlan = getUserSubscriptionPlan();
+
+  console.log(subscriptionPlan);
 
   const { startUpload } = useUploadThing('pdfUploader', {
     onUploadBegin: (filename: string) => setIsUploading(true),
